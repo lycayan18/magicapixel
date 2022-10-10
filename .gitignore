@@ -1,0 +1,9 @@
+/.idea/
+/ui/mainwindow/assets/
+/__pycache__/
+/ui/mainwindow/main.pyproject.user
+/ui/mainwindow/main.py
+/ui/mainwindow/main.pyproject
+/ui/mainwindow/form.ui.autosave
+/ui/mainwindow/__pycache__
+/ui/styles/__pycache__
