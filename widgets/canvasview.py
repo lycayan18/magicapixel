@@ -97,9 +97,13 @@ class CanvasView(QWidget):
         self.canvases[canvas].set_pixel(point.x(), point.y(), color)
         self.repaint()
 
-    def draw_line(self, p0: QPoint, p1: QPoint, color: tuple[int, int, int, int], canvas: int = 0):
+    def draw_line(self, p0: QPoint, p1: QPoint, color: tuple[int, int, int, int], canvas: int = 0, transform_to_canvas_relative_coordinates=True):
         start = p0
-        end = self.get_canvas_point(p1)
+        end = p1
+
+        if transform_to_canvas_relative_coordinates:
+            start = self.get_canvas_point(p0)
+            end = self.get_canvas_point(p1)
 
         self.canvases[canvas].draw_line(
             start.x(), start.y(), end.x(), end.y(), color)

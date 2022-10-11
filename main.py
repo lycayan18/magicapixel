@@ -162,11 +162,14 @@ class MainWidget(Ui_MainWindow, QWidget):
         elif self.current_brush == "stroke":
             self.preview_canvas.copy_content(self.canvas)
             self.canvas_view.draw_line(
-                # canvas_start_pos is canvas coordinate, not window coordinate!
                 self.mouse_state["canvas_start_pos"],
-                self.mouse_state["current_pos"],
+                self.canvas_view.get_canvas_point(
+                    self.mouse_state["current_pos"]
+                ),
                 self.current_color,
-                0
+                0,
+                # Do not transform to canvas relative coordinates as they've already been transformed
+                transform_to_canvas_relative_coordinates=False
             )
         elif self.current_brush == "picker":
             color = self.canvas_view.get_color(
