@@ -39,7 +39,7 @@ class MainWidget(Ui_MainWindow, QWidget):
 
         self.mouse_state = {
             "pressed": False,
-            "start_pos": QPoint(0, 0),
+            "canvas_start_pos": QPoint(0, 0),
             "current_pos": QPoint(0, 0),
             "prev_pos": QPoint(0, 0)
         }
@@ -99,7 +99,11 @@ class MainWidget(Ui_MainWindow, QWidget):
         self.color_picker.hide()
 
         self.mouse_state["pressed"] = True
-        self.mouse_state["start_pos"] = self.mouse_state["current_pos"]
+        # Write canvas-relative coordinates instead of window-related. If you won't do that,
+        # you'll get a bug: when you start drawing a line and you scale your canvas view or
+        # move it your line's starting point also shifts.
+        self.mouse_state["canvas_start_pos"] = self.canvas_view.get_canvas_point(
+            self.mouse_state["current_pos"])
 
         self.use_brush()
 
@@ -158,7 +162,8 @@ class MainWidget(Ui_MainWindow, QWidget):
         elif self.current_brush == "stroke":
             self.preview_canvas.copy_content(self.canvas)
             self.canvas_view.draw_line(
-                self.mouse_state["start_pos"],
+                # canvas_start_pos is canvas coordinate, not window coordinate!
+                self.mouse_state["canvas_start_pos"],
                 self.mouse_state["current_pos"],
                 self.current_color,
                 0

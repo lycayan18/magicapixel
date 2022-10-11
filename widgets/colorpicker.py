@@ -48,7 +48,9 @@ class ColorPicker(QWidget):
         self.rgbInput.setStyleSheet(LIGHT_LINEEDIT_STYLESHEET)
 
     def set_current_color(self, color: QColor):
-        self.current_hue = color.hue()
+        if color.hue() != -1:
+            self.current_hue = color.hue()
+
         self.current_saturation = color.saturation()
         self.current_value = color.value()
 

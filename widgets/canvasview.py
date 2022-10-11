@@ -98,7 +98,7 @@ class CanvasView(QWidget):
         self.repaint()
 
     def draw_line(self, p0: QPoint, p1: QPoint, color: tuple[int, int, int, int], canvas: int = 0):
-        start = self.get_canvas_point(p0)
+        start = p0
         end = self.get_canvas_point(p1)
 
         self.canvases[canvas].draw_line(
@@ -112,7 +112,7 @@ class CanvasView(QWidget):
         if point.x() < 0 or point.x() >= self.canvas_width or point.y() < 0 or point.y() >= self.canvas_height:
             return
 
-        self.canvases[canvas].fill(point.x(), point.y(), color)
+        self.canvases[canvas].fill(point.x(), point.y(), tuple(color))
 
         self.repaint()
 
