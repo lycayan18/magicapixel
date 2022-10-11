@@ -2,9 +2,10 @@ import sys
 
 from PyQt5.QtWidgets import QApplication, QPushButton, QWidget
 from PyQt5 import QtGui
-from PyQt5.QtCore import Qt, QPoint, QRect, QPointF
+from PyQt5.QtCore import QPoint, QRect, QPointF
 from canvas import Canvas
-from canvasview import CanvasView
+from widgets.canvasview import CanvasView
+from widgets.colorpicker import ColorPicker
 from ui.mainwindow.mainwindow import Ui_MainWindow
 from ui.styles.button import CURRENT_BRUSH_BUTTON_STYLESHEET
 
@@ -17,6 +18,7 @@ class MainWidget(Ui_MainWindow, QWidget):
         self.current_height = 32
 
         self.canvas = Canvas(self.current_width, self.current_height)
+        self.color_picker = ColorPicker(self.handle_color_change)
 
         # Canvas for previewing what you're going to draw
         self.preview_canvas = Canvas(self.current_width, self.current_height)
@@ -56,6 +58,19 @@ class MainWidget(Ui_MainWindow, QWidget):
         self.connect_brush_button_handler(self.strokeButton, "stroke")
         self.connect_brush_button_handler(self.pickerButton, "picker")
         self.connect_brush_button_handler(self.fillButton, "fill")
+        self.currentColorButton.clicked.connect(self.open_color_picker)
+
+    def open_color_picker(self):
+        self.color_picker.move(self.currentColorButton.x() + self.x() + self.brushPanel.x(),
+                               self.currentColorButton.y() + self.y() + self.brushPanel.y())
+        self.color_picker.show()
+
+    def handle_color_change(self, color: QtGui.QColor):
+        self.current_color = [color.red(), color.green(),
+                              color.blue(), color.alpha()]
+
+        self.currentColorButton.setStyleSheet(
+            f"background: rgb({color.red()}, {color.green()}, {color.blue()})")
 
     def connect_brush_button_handler(self, button: QPushButton, brush: str):
         button.clicked.connect(
@@ -78,6 +93,11 @@ class MainWidget(Ui_MainWindow, QWidget):
         self.brushPanel.move(0, ev.size().height() / 2 - 250)
 
     def mousePressEvent(self, ev: QtGui.QMouseEvent) -> None:
+        # For convenience let's always close the color picker
+        # Sometimes you can open color picker and don't close it, forget about it, and with
+        # next try opening you may be perplexed: Why it doesn't open?
+        self.color_picker.hide()
+
         self.mouse_state["pressed"] = True
         self.mouse_state["start_pos"] = self.mouse_state["current_pos"]
 
@@ -93,7 +113,10 @@ class MainWidget(Ui_MainWindow, QWidget):
         self.mouse_state["current_pos"] = ev.pos()
 
         if self.mouse_state["pressed"]:
+            self.canvas_view.highlight_pixel(QPoint(-1, -1))
             self.use_brush()
+        else:
+            self.canvas_view.highlight_pixel(ev.pos())
 
     def wheelEvent(self, ev: QtGui.QWheelEvent) -> None:
         # Scale canvas
@@ -145,7 +168,9 @@ class MainWidget(Ui_MainWindow, QWidget):
                 self.mouse_state["current_pos"])
 
             if color is not None:
-                self.current_color = color
+                qcolor = QtGui.QColor(*color)
+                self.handle_color_change(qcolor)
+                self.color_picker.set_current_color(qcolor)
         elif self.current_brush == "fill":
             self.canvas_view.fill(
                 self.mouse_state["current_pos"],
@@ -154,7 +179,12 @@ class MainWidget(Ui_MainWindow, QWidget):
             )
 
     def draw_to_canvas(self):
+        self.canvas_view.highlight_pixel(self.mouse_state["current_pos"])
         self.canvas.copy_content(self.preview_canvas)
+
+    def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
+        self.color_picker.close()
+        return super().closeEvent(a0)
 
 
 if __name__ == '__main__':

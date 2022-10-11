@@ -7,3 +7,5 @@
 /ui/mainwindow/form.ui.autosave
 /ui/mainwindow/__pycache__
 /ui/styles/__pycache__
+/widgets/__pycache__
+/utils/

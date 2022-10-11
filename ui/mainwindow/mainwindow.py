@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.setWindowModality(QtCore.Qt.ApplicationModal)
+        MainWindow.setWindowModality(QtCore.Qt.WindowModal)
         MainWindow.resize(800, 500)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
@@ -85,6 +85,12 @@ class Ui_MainWindow(object):
         self.fillButton.setIcon(icon3)
         self.fillButton.setIconSize(QtCore.QSize(24, 24))
         self.fillButton.setObjectName("fillButton")
+        self.currentColorButton = QtWidgets.QPushButton(self.brushPanel)
+        self.currentColorButton.setGeometry(QtCore.QRect(10, 430, 41, 41))
+        self.currentColorButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.currentColorButton.setStyleSheet("background: #fff;")
+        self.currentColorButton.setText("")
+        self.currentColorButton.setObjectName("currentColorButton")
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -92,6 +98,7 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        self.currentColorButton.setWhatsThis(_translate("MainWindow", "Текущий цвет кисти"))
 
 
 if __name__ == "__main__":

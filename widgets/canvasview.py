@@ -8,11 +8,12 @@ from canvas import Canvas
 class CanvasView(QWidget):
     def __init__(self, width: int, height: int, *canvases: Canvas, parent: QObject = None):
         super().__init__(parent)
-        self.shift = QPointF(-59, -59)
-        self.scale = 5.0
+        self.shift = QPointF(0, 0)
+        self.scale = 1.0
         self.canvas_width = width
         self.canvas_height = height
         self.canvases = list(canvases)
+        self.highlighted_pixel = QPoint(-1, -1)
 
     def shift_by(self, shift: QPoint):
         self.shift += shift
@@ -59,6 +60,16 @@ class CanvasView(QWidget):
                 color[2] *= 255
                 color[3] *= 255
 
+                if x == self.highlighted_pixel.x() and y == self.highlighted_pixel.y():
+                    if color[0] + color[1] + color[2] < 110 * 3:
+                        color[0] = min(color[0] + 60, 255)
+                        color[1] = min(color[1] + 60, 255)
+                        color[2] = min(color[2] + 60, 255)
+                    else:
+                        color[0] = max(color[0] - 60, 0)
+                        color[1] = max(color[1] - 60, 0)
+                        color[2] = max(color[2] - 60, 0)
+
                 brush = QColor(*color)
                 painter.fillRect(wx, wy, self.scale, self.scale, brush)
 
@@ -103,4 +114,8 @@ class CanvasView(QWidget):
 
         self.canvases[canvas].fill(point.x(), point.y(), color)
 
+        self.repaint()
+
+    def highlight_pixel(self, at: QPoint):
+        self.highlighted_pixel = self.get_canvas_point(at)
         self.repaint()

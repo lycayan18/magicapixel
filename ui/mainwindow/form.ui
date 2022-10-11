@@ -3,7 +3,7 @@
  <class>MainWindow</class>
  <widget class="QWidget" name="MainWindow">
   <property name="windowModality">
-   <enum>Qt::ApplicationModal</enum>
+   <enum>Qt::WindowModal</enum>
   </property>
   <property name="geometry">
    <rect>
@@ -191,6 +191,28 @@ QPushButton {
       <width>24</width>
       <height>24</height>
      </size>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="currentColorButton">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>430</y>
+      <width>41</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="cursor">
+     <cursorShape>PointingHandCursor</cursorShape>
+    </property>
+    <property name="whatsThis">
+     <string>Текущий цвет кисти</string>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background: #fff;</string>
+    </property>
+    <property name="text">
+     <string/>
     </property>
    </widget>
   </widget>
