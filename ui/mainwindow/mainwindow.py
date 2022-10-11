@@ -11,20 +11,20 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
-class Ui_MainWindowUI(object):
-    def setupUi(self, MainWindowUI):
-        MainWindowUI.setObjectName("MainWindowUI")
-        MainWindowUI.setWindowModality(QtCore.Qt.ApplicationModal)
-        MainWindowUI.resize(800, 500)
+class Ui_MainWindow(object):
+    def setupUi(self, MainWindow):
+        MainWindow.setObjectName("MainWindow")
+        MainWindow.setWindowModality(QtCore.Qt.ApplicationModal)
+        MainWindow.resize(800, 500)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(MainWindowUI.sizePolicy().hasHeightForWidth())
-        MainWindowUI.setSizePolicy(sizePolicy)
-        MainWindowUI.setMinimumSize(QtCore.QSize(400, 500))
-        MainWindowUI.setAutoFillBackground(True)
-        MainWindowUI.setStyleSheet("background: #ccc;")
-        self.brushPanel = QtWidgets.QGroupBox(MainWindowUI)
+        sizePolicy.setHeightForWidth(MainWindow.sizePolicy().hasHeightForWidth())
+        MainWindow.setSizePolicy(sizePolicy)
+        MainWindow.setMinimumSize(QtCore.QSize(400, 500))
+        MainWindow.setAutoFillBackground(False)
+        MainWindow.setStyleSheet("background: #ccc;")
+        self.brushPanel = QtWidgets.QGroupBox(MainWindow)
         self.brushPanel.setGeometry(QtCore.QRect(0, 0, 115, 500))
         self.brushPanel.setMinimumSize(QtCore.QSize(115, 0))
         self.brushPanel.setMaximumSize(QtCore.QSize(115, 16777215))
@@ -86,19 +86,19 @@ class Ui_MainWindowUI(object):
         self.fillButton.setIconSize(QtCore.QSize(24, 24))
         self.fillButton.setObjectName("fillButton")
 
-        self.retranslateUi(MainWindowUI)
-        QtCore.QMetaObject.connectSlotsByName(MainWindowUI)
+        self.retranslateUi(MainWindow)
+        QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-    def retranslateUi(self, MainWindowUI):
+    def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindowUI.setWindowTitle(_translate("MainWindowUI", "MainWindow"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
 
 
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
-    MainWindowUI = QtWidgets.QWidget()
-    ui = Ui_MainWindowUI()
-    ui.setupUi(MainWindowUI)
-    MainWindowUI.show()
+    MainWindow = QtWidgets.QWidget()
+    ui = Ui_MainWindow()
+    ui.setupUi(MainWindow)
+    MainWindow.show()
     sys.exit(app.exec_())

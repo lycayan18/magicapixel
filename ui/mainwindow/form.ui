@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MainWindowUI</class>
- <widget class="QWidget" name="MainWindowUI">
+ <class>MainWindow</class>
+ <widget class="QWidget" name="MainWindow">
   <property name="windowModality">
    <enum>Qt::ApplicationModal</enum>
   </property>
@@ -29,7 +29,7 @@
    <string>MainWindow</string>
   </property>
   <property name="autoFillBackground">
-   <bool>true</bool>
+   <bool>false</bool>
   </property>
   <property name="styleSheet">
    <string notr="true">background: #ccc;</string>

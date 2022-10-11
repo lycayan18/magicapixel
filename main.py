@@ -5,11 +5,11 @@ from PyQt5 import QtGui
 from PyQt5.QtCore import Qt, QPoint, QRect, QPointF
 from canvas import Canvas
 from canvasview import CanvasView
-from ui.mainwindow.mainwindow import Ui_MainWindowUI
+from ui.mainwindow.mainwindow import Ui_MainWindow
 from ui.styles.button import CURRENT_BRUSH_BUTTON_STYLESHEET
 
 
-class MainWidget(Ui_MainWindowUI, QWidget):
+class MainWidget(Ui_MainWindow, QWidget):
     def __init__(self):
         super().__init__()
         # Current drawing size
@@ -154,7 +154,6 @@ class MainWidget(Ui_MainWindowUI, QWidget):
             )
 
     def draw_to_canvas(self):
-
         self.canvas.copy_content(self.preview_canvas)
 
 
