@@ -1,11 +1,14 @@
 import sys
 
-from PyQt5.QtWidgets import QApplication, QPushButton, QWidget
+from PIL import Image
+from PyQt5.QtWidgets import QApplication, QPushButton, QWidget, QMenuBar, QAction, QFileDialog
 from PyQt5 import QtGui
-from PyQt5.QtCore import QPoint, QRect, QPointF
+from PyQt5.QtCore import QPoint, QRect, QPointF, QUrl
 from canvas import Canvas
 from widgets.canvasview import CanvasView
 from widgets.colorpicker import ColorPicker
+from utils.canvas_renderer import render_canvases
+from utils.color_converters import convert
 from ui.mainwindow.mainwindow import Ui_MainWindow
 from ui.styles.button import CURRENT_BRUSH_BUTTON_STYLESHEET
 
@@ -13,6 +16,10 @@ from ui.styles.button import CURRENT_BRUSH_BUTTON_STYLESHEET
 class MainWidget(Ui_MainWindow, QWidget):
     def __init__(self):
         super().__init__()
+
+        # Current editing file
+        self.current_file = None
+
         # Current drawing size
         self.current_width = 32
         self.current_height = 32
@@ -46,12 +53,37 @@ class MainWidget(Ui_MainWindow, QWidget):
 
         self.initUI()
 
+    def init_menu_bar(self):
+        menu = QMenuBar()
+        self.vbox.addWidget(menu)
+
+        file_menu = menu.addMenu("File")
+
+        self.open_file_action = QAction("Open", self)
+        self.open_file_action.triggered.connect(self.handle_open_file)
+
+        self.save_file_action = QAction("Save", self)
+        self.save_file_action.triggered.connect(self.handle_save_file)
+
+        self.save_file_action.setDisabled(True)
+
+        self.save_as_file_action = QAction("Save as...", self)
+        self.save_as_file_action.triggered.connect(self.handle_save_as_file)
+
+        file_menu.addAction(self.open_file_action)
+        file_menu.addAction(self.save_file_action)
+        file_menu.addAction(self.save_as_file_action)
+
+        menu.setStyleSheet("background: #fff;")
+
     def initUI(self):
         self.setupUi(self)
         self.setWindowTitle("Magica Pixel")
         self.setWindowIcon(QtGui.QIcon("./assets/icon.ico"))
 
-        self.canvas_view.setGeometry(0, 0, 800, 500)
+        self.init_menu_bar()
+
+        self.canvas_view.setGeometry(0, 0, 800, 515)
         self.canvas_view.show()
 
         self.connect_brush_button_handler(self.penButton, "pen")
@@ -59,6 +91,47 @@ class MainWidget(Ui_MainWindow, QWidget):
         self.connect_brush_button_handler(self.pickerButton, "picker")
         self.connect_brush_button_handler(self.fillButton, "fill")
         self.currentColorButton.clicked.connect(self.open_color_picker)
+
+    def handle_open_file(self):
+        filepath: QUrl = QFileDialog.getOpenFileName(
+            self, "Save Image", "./", "Images (*.png *.jpg *.jpeg *.bmp)")[0]
+
+        if filepath != '':
+            self.current_file = filepath
+            self.save_file_action.setEnabled(True)
+
+            # TODO: Add error handling ( e.g. when file structure is broken )
+            im = Image.open(filepath)
+
+            self.canvas.resize(im.width, im.height)
+            self.preview_canvas.resize(im.width, im.height)
+            data = im.load()
+
+            for x in range(im.width):
+                for y in range(im.height):
+                    self.canvas.set_pixel(x, y, convert(data[x, y], im.mode))
+
+            self.preview_canvas.copy_content(self.canvas)
+            self.canvas_view.resize_view(im.width, im.height)
+            self.repaint()
+
+    def handle_save_file(self):
+        im = render_canvases(self.current_width,
+                             self.current_height, [self.canvas])
+
+        im.save(self.current_file)
+
+    def handle_save_as_file(self):
+        filepath: QUrl = QFileDialog.getSaveFileName(
+            self, "Save Image", "./", "Images (*.png *.jpg *.jpeg *.bmp)")[0]
+
+        if filepath != '':
+            self.current_file = filepath
+            self.save_file_action.setEnabled(True)
+
+            self.handle_save_file()
+
+    # Opens color picker window
 
     def open_color_picker(self):
         self.color_picker.move(self.currentColorButton.x() + self.x() + self.brushPanel.x(),
@@ -90,7 +163,10 @@ class MainWidget(Ui_MainWindow, QWidget):
     def resizeEvent(self, ev: QtGui.QResizeEvent) -> None:
         self.canvas_view.setGeometry(QRect(QPoint(0, 0), ev.size()))
 
-        self.brushPanel.move(0, ev.size().height() / 2 - 250)
+        self.verticalLayoutWidget.resize(ev.size().width(), 20)
+
+        # Use max to bound brushPanel and vbox so nothing overlap each other
+        self.brushPanel.move(0, max(ev.size().height() / 2 - 250, 25))
 
     def mousePressEvent(self, ev: QtGui.QMouseEvent) -> None:
         # For convenience let's always close the color picker

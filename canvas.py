@@ -1,6 +1,6 @@
 class Canvas:
     def __init__(self, width: int, height: int):
-        self.canvas = list()
+        self.canvas: list = list()
 
         for i in range(width * height):
             self.canvas.append((0, 0, 0, 255))
@@ -13,6 +13,14 @@ class Canvas:
 
     def get_pixel(self, x: int, y: int) -> tuple[int, int, int, int]:
         return self.canvas[x + y * self.width]
+
+    def resize(self, w: int, h: int):
+        self.width = w
+        self.height = h
+        self.canvas.clear()
+
+        for i in range(w * h):
+            self.canvas.append((0, 0, 0, 255))
 
     # Canvas sizes must be identical!
     def copy_content(self, canvas):

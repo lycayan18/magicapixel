@@ -8,4 +8,10 @@
 /ui/mainwindow/__pycache__
 /ui/styles/__pycache__
 /widgets/__pycache__
-/utils/
+/utils/__pycache__
+/ui/form.ui
+/ui/main.py
+/ui/main.pyproject
+/ui/main.pyproject.user
+/ui/mainwindow.old.py
+/ui/__pycache__

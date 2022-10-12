@@ -1,6 +1,6 @@
 from typing import Union
 from PyQt5.QtWidgets import QWidget
-from PyQt5.QtGui import QPaintEvent, QPainter, QColor, QRgba64
+from PyQt5.QtGui import QPaintEvent, QPainter, QColor
 from PyQt5.QtCore import QPoint, QObject, QPointF
 from canvas import Canvas
 
@@ -27,7 +27,7 @@ class CanvasView(QWidget):
     def set_scale(self, scale: float):
         self.scale = scale
 
-    def resize(self, width: int, height: int):
+    def resize_view(self, width: int, height: int):
         self.canvas_width = width
         self.canvas_height = height
 
