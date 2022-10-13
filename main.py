@@ -21,8 +21,8 @@ class MainWidget(Ui_MainWindow, QWidget):
         self.current_file = None
 
         # Current drawing size
-        self.current_width = 32
-        self.current_height = 32
+        self.current_width = 256
+        self.current_height = 256
 
         self.canvas = Canvas(self.current_width, self.current_height)
         self.color_picker = ColorPicker(self.handle_color_change)
@@ -113,6 +113,7 @@ class MainWidget(Ui_MainWindow, QWidget):
 
             self.preview_canvas.copy_content(self.canvas)
             self.canvas_view.resize_view(im.width, im.height)
+            self.canvas_view.repaint()
             self.repaint()
 
     def handle_save_file(self):
@@ -217,6 +218,7 @@ class MainWidget(Ui_MainWindow, QWidget):
                 (self.mouse_state["current_pos"] - start_point) * 0.5)
             self.canvas_view.scale_by(0.5)
 
+        self.canvas_view.repaint()
         self.repaint()
 
     def use_brush(self):
