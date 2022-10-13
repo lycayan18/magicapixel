@@ -1,8 +1,9 @@
 from typing import Union
 from PyQt5.QtWidgets import QWidget
-from PyQt5.QtGui import QPaintEvent, QPainter, QColor
-from PyQt5.QtCore import QPoint, QObject, QPointF
+from PyQt5.QtGui import QPaintEvent, QPainter, QColor, QImage
+from PyQt5.QtCore import QPoint, QObject, QPointF, QSize, QRect
 from canvas import Canvas
+import time
 
 
 class CanvasView(QWidget):
@@ -33,13 +34,24 @@ class CanvasView(QWidget):
 
     def paintEvent(self, ev: QPaintEvent):
         painter: QPainter = QPainter(self)
+        canvas_window_width = int(self.canvas_width * self.scale)
+        canvas_window_height = int(self.canvas_height * self.scale)
+
+        start = time.time()
+
+        # [0 for _ in range(self.canvas_width * self.canvas_height * 4)]
+        data = []
+
+        operations = 0
 
         for y in range(self.canvas_height):
             for x in range(self.canvas_width):
+                operations += 1
                 color = [0, 0, 0, 0]
 
                 for canvas in self.canvases:
                     # Convert channels to float 0-1 range
+                    # [i / 255 for i in canvas.get_pixel(x, y)]
                     pixel = [i / 255 for i in canvas.get_pixel(x, y)]
 
                     # Apply alpha blending
@@ -50,15 +62,10 @@ class CanvasView(QWidget):
                     color[2] = color[2] * color[3] + pixel[2] * a_coef
                     color[3] = color[3] + a_coef
 
-                wx = (x) * self.scale + \
-                    self.shift.x() + self.width() * 0.5
-                wy = (y) * self.scale + \
-                    self.shift.y() + self.height() * 0.5
-
-                color[0] *= 255
-                color[1] *= 255
-                color[2] *= 255
-                color[3] *= 255
+                color[0] = int(color[0] * 255)
+                color[1] = int(color[1] * 255)
+                color[2] = int(color[2] * 255)
+                color[3] = int(color[3] * 255)
 
                 if x == self.highlighted_pixel.x() and y == self.highlighted_pixel.y():
                     if color[0] + color[1] + color[2] < 110 * 3:
@@ -70,8 +77,24 @@ class CanvasView(QWidget):
                         color[1] = max(color[1] - 60, 0)
                         color[2] = max(color[2] - 60, 0)
 
-                brush = QColor(*color)
-                painter.fillRect(wx, wy, self.scale, self.scale, brush)
+                data.append(color[0])
+                data.append(color[1])
+                data.append(color[2])
+                data.append(color[3])
+
+        # print(1 / (time.time() - start))
+
+        rendered_view = QImage(
+            bytes(data),
+            self.canvas_width, self.canvas_height,
+            QImage.Format.Format_RGBA8888
+        )
+
+        scaled_view = rendered_view.scaled(
+            canvas_window_width, canvas_window_height)
+
+        painter.drawImage(QPoint(self.width(), self.height())
+                          * 0.5 + self.shift, scaled_view)
 
     def get_canvas_point(self, mouse: QPoint) -> QPoint:
         # To avoid inaccuracy we do all calculations in float
