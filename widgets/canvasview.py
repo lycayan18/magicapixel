@@ -5,13 +5,13 @@ from PyQt5.QtWidgets import QWidget, QOpenGLWidget
 from PyQt5.QtGui import QPaintEvent, QPainter, QColor, QImage
 from PyQt5.QtCore import QPoint, QObject, QPointF, QSize, QRect
 import OpenGL.GL as gl
-from utils.canvas_renderer import render_canvases_into_bytes
-from canvas import Canvas
+# from utils.canvas_renderer import render_canvases_into_bytes
 from shaders.base import VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_SOURCE
+import magicautils
 
 
 class CanvasView(QOpenGLWidget):
-    def __init__(self, width: int, height: int, *canvases: Canvas, parent: QObject = None):
+    def __init__(self, width: int, height: int, *canvases: magicautils.Canvas, parent: QObject = None):
         super().__init__(parent)
         self.shift = QPointF(0, 0)
         self.scale = 1.0
@@ -71,8 +71,8 @@ class CanvasView(QOpenGLWidget):
 
         gl.glUniform1i(self.sampler_location, 0)
 
-        texture_data = render_canvases_into_bytes(
-            self.canvas_width, self.canvas_height, self.canvases)
+        texture_data = magicautils.render_canvases(
+            self.canvas_width, self.canvas_height, self.canvases, -1, -1)
 
         self.view_texture = self.create_texture2D(
             self.canvas_width, self.canvas_height, texture_data)
@@ -142,6 +142,8 @@ class CanvasView(QOpenGLWidget):
         gl.glClearColor(0.1, 0.1, 0.1, 1.0)
         gl.glClear(gl.GL_COLOR_BUFFER_BIT)
 
+        gl.glUniform2f(self.canvas_size_location,
+                       self.canvas_width, self.canvas_height)
         gl.glUniform1f(self.scale_uniform_location, self.scale)
         gl.glUniform2f(self.shift_uniform_location,
                        self.shift.x(), self.shift.y())
@@ -156,7 +158,7 @@ class CanvasView(QOpenGLWidget):
         gl.glDrawArrays(gl.GL_TRIANGLES, 0, 6)
 
     def update_view_texture(self):
-        texture_data = render_canvases_into_bytes(
+        texture_data = magicautils.render_canvases(
             self.canvas_width, self.canvas_height, self.canvases,
             self.highlighted_pixel.x(), self.highlighted_pixel.y())
         self.set_texture_data(
@@ -180,9 +182,6 @@ class CanvasView(QOpenGLWidget):
         self.canvas_width = width
         self.canvas_height = height
 
-        gl.glUniform2f(self.canvas_size_location,
-                       self.canvas_width, self.canvas_height)
-
     def get_canvas_point(self, mouse: QPoint) -> QPoint:
         # To avoid inaccuracy we do all calculations in float
         out: QPointF = (QPointF(mouse) - QPointF(self.shift) -
@@ -204,7 +203,7 @@ class CanvasView(QOpenGLWidget):
         if point.x() < 0 or point.x() >= self.canvas_width or point.y() < 0 or point.y() >= self.canvas_height:
             return
 
-        self.canvases[canvas].set_pixel(point.x(), point.y(), color)
+        self.canvases[canvas].set_pixel(point.x(), point.y(), tuple(color))
         self.update_view_texture()
         self.repaint()
 
@@ -217,7 +216,7 @@ class CanvasView(QOpenGLWidget):
             end = self.get_canvas_point(p1)
 
         self.canvases[canvas].draw_line(
-            start.x(), start.y(), end.x(), end.y(), color)
+            start.x(), start.y(), end.x(), end.y(), tuple(color))
 
         self.update_view_texture()
         self.repaint()

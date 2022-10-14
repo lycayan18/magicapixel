@@ -4,13 +4,12 @@ from PIL import Image
 from PyQt5.QtWidgets import QApplication, QPushButton, QWidget, QMenuBar, QAction, QFileDialog
 from PyQt5 import QtGui
 from PyQt5.QtCore import QPoint, QRect, QPointF, QUrl
-from canvas import Canvas
 from widgets.canvasview import CanvasView
 from widgets.colorpicker import ColorPicker
-from utils.canvas_renderer import render_canvases
 from utils.color_converters import convert
 from ui.mainwindow.mainwindow import Ui_MainWindow
 from ui.styles.button import CURRENT_BRUSH_BUTTON_STYLESHEET
+import magicautils
 
 
 class MainWidget(Ui_MainWindow, QWidget):
@@ -21,14 +20,16 @@ class MainWidget(Ui_MainWindow, QWidget):
         self.current_file = None
 
         # Current drawing size
-        self.current_width = 256
-        self.current_height = 256
+        self.current_width = 96
+        self.current_height = 96
 
-        self.canvas = Canvas(self.current_width, self.current_height)
+        self.canvas = magicautils.Canvas(
+            self.current_width, self.current_height)
         self.color_picker = ColorPicker(self.handle_color_change)
 
         # Canvas for previewing what you're going to draw
-        self.preview_canvas = Canvas(self.current_width, self.current_height)
+        self.preview_canvas = magicautils.Canvas(
+            self.current_width, self.current_height)
 
         self.canvas_view = CanvasView(
             self.current_width, self.current_height,
@@ -94,7 +95,7 @@ class MainWidget(Ui_MainWindow, QWidget):
 
     def handle_open_file(self):
         filepath: QUrl = QFileDialog.getOpenFileName(
-            self, "Save Image", "./", "Images (*.png *.jpg *.jpeg *.bmp)")[0]
+            self, "Save Image", "./", "Images (*.png *.jpg *.jpeg *.bmp *.ico)")[0]
 
         if filepath != '':
             self.current_file = filepath
@@ -111,15 +112,20 @@ class MainWidget(Ui_MainWindow, QWidget):
                 for y in range(im.height):
                     self.canvas.set_pixel(x, y, convert(data[x, y], im.mode))
 
-            self.preview_canvas.copy_content(self.canvas)
+            self.canvas.copy_content(self.preview_canvas)
             self.canvas_view.resize_view(im.width, im.height)
             self.canvas_view.repaint()
             self.repaint()
 
-    def handle_save_file(self):
-        im = render_canvases(self.current_width,
-                             self.current_height, [self.canvas])
+            self.current_width = im.width
+            self.current_height = im.height
 
+    def handle_save_file(self):
+        data = magicautils.render_canvases(self.current_width,
+                                           self.current_height, [self.canvas])
+
+        im = Image.frombytes(
+            "RGBA", (self.current_width, self.current_height), data, "raw")
         im.save(self.current_file)
 
     def handle_save_as_file(self):
@@ -238,7 +244,7 @@ class MainWidget(Ui_MainWindow, QWidget):
                 0
             )
         elif self.current_brush == "stroke":
-            self.preview_canvas.copy_content(self.canvas)
+            self.canvas.copy_content(self.preview_canvas)
             self.canvas_view.draw_line(
                 self.mouse_state["canvas_start_pos"],
                 self.canvas_view.get_canvas_point(
@@ -266,7 +272,7 @@ class MainWidget(Ui_MainWindow, QWidget):
 
     def draw_to_canvas(self):
         self.canvas_view.highlight_pixel(self.mouse_state["current_pos"])
-        self.canvas.copy_content(self.preview_canvas)
+        self.preview_canvas.copy_content(self.canvas)
 
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
         self.color_picker.close()

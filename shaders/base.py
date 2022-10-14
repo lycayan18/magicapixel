@@ -24,8 +24,20 @@ uniform sampler2D textureSampler;
 
 varying vec2 uv;
 
+vec3 lerp(vec3 a, vec3 b, float x) {
+    return a + (b - a) * x;
+}
+
 void main()
 {
-    gl_FragColor = texture2D(textureSampler, uv);
+    vec4 color = texture2D(textureSampler, uv);
+
+    vec3 backgroundColor = vec3(0.2);
+
+    if(int(gl_FragCoord.x / 10) % 2 + int(gl_FragCoord.y / 10) % 2 == 1) {
+        backgroundColor = vec3(0.3);
+    }
+
+    gl_FragColor = vec4(lerp(backgroundColor, color.rgb, color.a), 1.0);
 }
 """

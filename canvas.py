@@ -1,3 +1,5 @@
+# I won't delete this file as I can use it in future
+
 class Canvas:
     def __init__(self, width: int, height: int):
         self.canvas: list = list()
@@ -62,35 +64,38 @@ class Canvas:
 
         pixels = list()
         pixels.append((x, y))
+        self.set_pixel(x, y, color)
 
         while len(pixels) > 0:
             pixel = pixels.pop(0)
 
-            self.set_pixel(*pixel, color)
-
             if pixel[0] - 1 >= 0:
                 left = (pixel[0] - 1, pixel[1])
 
-                if self.get_pixel(*left) == start_color and left not in pixels:
+                if self.get_pixel(*left) == start_color:
                     pixels.append(left)
+                    self.set_pixel(*left, color)
 
             if pixel[0] + 1 < self.width:
                 right = (pixel[0] + 1, pixel[1])
 
-                if self.get_pixel(*right) == start_color and right not in pixels:
+                if self.get_pixel(*right) == start_color:
                     pixels.append(right)
+                    self.set_pixel(*right, color)
 
             if pixel[1] - 1 >= 0:
                 bottom = (pixel[0], pixel[1] - 1)
 
-                if self.get_pixel(*bottom) == start_color and bottom not in pixels:
+                if self.get_pixel(*bottom) == start_color:
                     pixels.append(bottom)
+                    self.set_pixel(*bottom, color)
 
             if pixel[1] + 1 < self.height:
                 top = (pixel[0], pixel[1] + 1)
 
-                if self.get_pixel(*top) == start_color and top not in pixels:
+                if self.get_pixel(*top) == start_color:
                     pixels.append(top)
+                    self.set_pixel(*top, color)
 
     def clear(self, color: tuple[int, int, int, int] = (0, 0, 0, 255)):
         for i in range(self.width * self.height):

@@ -16,3 +16,8 @@
 /ui/mainwindow.old.py
 /ui/__pycache__
 /shaders/__pycache__
+/magicautils/src/magicautils.pro
+/magicautils/src/magicautils.pro.user
+/magicautils/src/*.autosave
+/magicautils/build/
+/*.pyd
