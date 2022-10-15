@@ -26,4 +26,7 @@
 /ui/newfilewindow/main.py
 /ui/newfilewindow/main.pyproject
 /ui/newfilewindow/main.pyproject.user
-/ui/resizesettingswindow/
+/ui/resizesettingswindow/__pycache__
+/ui/resizesettingswindow/main.py
+/ui/resizesettingswindow/main.pyproject
+/ui/resizesettingswindow/main.pyproject.user

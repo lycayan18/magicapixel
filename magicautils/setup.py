@@ -7,7 +7,7 @@ def main():
           description="MagicaPixel's utils lib",
           author="DungyBug",
           author_email="",
-          ext_modules=[Extension("magicautils", sources=["src/clamp.cpp", "src/pixelutils.cpp", "src/canvas.cpp", "src/rendercanvases.cpp", "src/main.cpp"], extra_compile_args=["/std:c++20"])])
+          ext_modules=[Extension("magicautils", sources=["src/clamp.cpp", "src/lerp.cpp", "src/pixelutils.cpp", "src/canvas.cpp", "src/rendercanvases.cpp", "src/main.cpp"], extra_compile_args=["/std:c++20"])])
 
 
 if __name__ == "__main__":

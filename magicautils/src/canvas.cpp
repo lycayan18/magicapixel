@@ -4,6 +4,7 @@
 #include "vec2.h"
 #include "clamp.h"
 #include "pixelutils.h"
+#include "color.h"
 
 extern "C"
 {
@@ -260,14 +261,16 @@ PyObject *canvas_getPixel(canvasobject *self, PyObject *args)
 PyObject *canvas_resize(canvasobject *self, PyObject *args)
 {
     int width, height;
+    bool resizeCanvasContents = false;
+    bool smoothResize = false;
 
-    if(!PyArg_ParseTuple(args, "ii", &width, &height))
+    if(!PyArg_ParseTuple(args, "ii|bb", &width, &height, &resizeCanvasContents, &smoothResize))
     {
-        PyErr_SetString(PyExc_TypeError, "Canvas.resize(width: int, height: int): Expected two ints.");
+        PyErr_SetString(PyExc_TypeError, "Canvas.resize(width: int, height: int, resize_canvas_contents: bool = False, smooth_resize: bool = False): Expected two ints and one boolean.");
         return NULL;
     }
 
-    delete[] self->data;
+    unsigned char* oldData = self->data;
 
     // TODO: Add canvas scaling
 
@@ -278,8 +281,115 @@ PyObject *canvas_resize(canvasobject *self, PyObject *args)
         self->data[i] = 0;
     }
 
+    if(resizeCanvasContents)
+    {
+        float xScaleFactor = float(self->width) / float(width);
+        float yScaleFactor = float(self->height) / float(height);
+
+        // Scale image
+        for(unsigned int x = 0; x < width; x++)
+        {
+            for(unsigned int y = 0; y < height; y++)
+            {
+                // Relative to old canvas coordinates
+                if(smoothResize)
+                {
+                    float scaledX = float(x) * xScaleFactor;
+                    float scaledY = float(y) * yScaleFactor;
+
+                    unsigned int r = 0, g = 0, b = 0, a = 0;
+
+                    // If we scale image down, get average color of pixels
+                    if(xScaleFactor > 1)
+                    {
+                        for(float sx = scaledX; sx < scaledX + xScaleFactor; sx++)
+                        {
+                            color4_t row = {0, 0, 0, 0};
+
+                            if(yScaleFactor > 1)
+                            {
+                                for(float sy = scaledY; sy < scaledY + yScaleFactor; sy++)
+                                {
+                                    color4_t column;
+
+                                    // We can use here usual "getPixel", which would be faster, than getPixelSmoothColor, but for
+                                    // qualitative image scaling we use "getPixelSmoothColor"
+                                    getPixelSmoothColor(oldData, sx, sy, self->width, self->height, &column.r, &column.g, &column.b, &column.a);
+
+                                    row.r += column.r;
+                                    row.g += column.g;
+                                    row.b += column.b;
+                                    row.a += column.a;
+                                }
+
+                                row.r /= ceilf(yScaleFactor);
+                                row.g /= ceilf(yScaleFactor);
+                                row.b /= ceilf(yScaleFactor);
+                                row.a /= ceilf(yScaleFactor);
+                            }
+                            else
+                            {
+                                // We can use here usual "getPixel", which would be faster, than getPixelSmoothColor, but for
+                                // qualitative image scaling we use "getPixelSmoothColor"
+                                getPixelSmoothColor(oldData, sx, scaledY, self->width, self->height, &row.r, &row.g, &row.b, &row.a);
+                            }
+
+                            r += row.r;
+                            g += row.g;
+                            b += row.b;
+                            a += row.a;
+                        }
+
+                        r /= ceilf(xScaleFactor);
+                        g /= ceilf(xScaleFactor);
+                        b /= ceilf(xScaleFactor);
+                        a /= ceilf(xScaleFactor);
+                    }
+                    else
+                    {
+                        // We scale image up, get linearly interpolated color
+                        getPixelSmoothColor(oldData, scaledX, scaledY, self->width, self->height, &r, &g, &b, &a);
+                    }
+
+                    setPixel(self->data, x, y, width, r, g, b, a);
+                }
+                else
+                {
+                    unsigned int scaledX = (unsigned int)(float(x) * xScaleFactor);
+                    unsigned int scaledY = (unsigned int)(float(y) * yScaleFactor);
+
+                    unsigned int r, g, b, a;
+
+                    getPixel(oldData, (unsigned int)scaledX, (unsigned int)scaledY, self->width, &r, &g, &b, &a);
+
+                    setPixel(self->data, x, y, width, r, g, b, a);
+                }
+            }
+        }
+    }
+    else
+    {
+        // Keep original image in left-top corner
+
+        // Clamp content width to avoid writing in out of bounds
+        unsigned int contentWidth = min(self->width, width);
+        unsigned int contentHeight = min(self->height, height);
+
+        for(unsigned int x = 0; x < contentWidth; x++)
+        {
+            for(unsigned int y = 0; y < contentHeight; y++)
+            {
+                unsigned int r, g, b, a;
+                getPixel(oldData, x, y, self->width, &r, &g, &b, &a);
+                setPixel(self->data, x, y, width, r, g, b, a);
+            }
+        }
+    }
+
     self->width = width;
     self->height = height;
+
+    delete[] oldData;
 
     Py_INCREF(Py_None);
     return Py_None;

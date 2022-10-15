@@ -34,7 +34,7 @@ extern "C"
     static PyMethodDef canvas_methods[] = {
         {"set_pixel",       (PyCFunction)canvas_setPixel,       METH_VARARGS,   PyDoc_STR("Canvas.set_pixel(x: int, y: int, color: tuple[int, int, int, int]): Sets pixel color.")},
         {"get_pixel",       (PyCFunction)canvas_getPixel,       METH_VARARGS,   PyDoc_STR("Canvas.get_pixel(x: int, y: int): Gets pixel color.")},
-        {"resize",          (PyCFunction)canvas_resize,         METH_VARARGS,   PyDoc_STR("Canvas.resize(width: int, height: int): Resizes canvas and clears it.")},
+        {"resize",          (PyCFunction)canvas_resize,         METH_VARARGS,   PyDoc_STR("Canvas.resize(width: int, height: int, resize_canvas_contents: bool = False, smooth_resize: bool = False): Resizes canvas and scales canvas content if required.")},
         {"copy_content",    (PyCFunction)canvas_copyContent,    METH_VARARGS,   PyDoc_STR("Canvas.copy_content(target: Canvas): Copies canvas data to target.")},
         {"draw_line",       (PyCFunction)canvas_drawLine,       METH_VARARGS,   PyDoc_STR("Canvas.draw_line(x0: int, y0: int, x1: int, y1: int, color: tuple[int, int, int, int]): Draws line from (x0, y0) to (x1, y1) with provided color ( color replaces with provided, without any alpha blending ).")},
         {"fill",            (PyCFunction)canvas_fill,           METH_VARARGS,   PyDoc_STR("Canvas.fill(x: int, y: int, color: tuple[int, int, int, int]): Flood fills starting from point (x, y) with provided color.")},

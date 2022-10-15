@@ -7,6 +7,7 @@ from PyQt5.QtCore import QPoint, QRect, QPointF, QUrl, Qt
 from widgets.canvasview import CanvasView
 from widgets.newfilewindow import NewFileWindow
 from widgets.colorpicker import ColorPicker
+from widgets.resizesettingswindow import ResizeSettingsWindow
 from utils.color_converters import convert
 from ui.mainwindow.mainwindow import Ui_MainWindow
 from ui.styles.button import CURRENT_BRUSH_BUTTON_STYLESHEET
@@ -64,26 +65,30 @@ class MainWidget(Ui_MainWindow, QWidget):
         menu = QMenuBar()
         self.vbox.addWidget(menu)
 
-        file_menu = menu.addMenu("File")
+        file_menu = menu.addMenu("Файл")
 
-        self.new_file_action = QAction("New", self)
+        self.new_file_action = QAction("Новый", self)
         self.new_file_action.triggered.connect(self.handle_new_file)
 
-        self.open_file_action = QAction("Open", self)
+        self.open_file_action = QAction("Открыть", self)
         self.open_file_action.triggered.connect(self.handle_open_file)
 
-        self.save_file_action = QAction("Save", self)
+        self.save_file_action = QAction("Сохранить", self)
         self.save_file_action.triggered.connect(self.handle_save_file)
 
         self.save_file_action.setDisabled(True)
 
-        self.save_as_file_action = QAction("Save as...", self)
+        self.save_as_file_action = QAction("Сохранить как...", self)
         self.save_as_file_action.triggered.connect(self.handle_save_as_file)
+
+        self.resize_canvas_action = QAction("Масштабировать", self)
+        self.resize_canvas_action.triggered.connect(self.handle_resize_canvas)
 
         file_menu.addAction(self.new_file_action)
         file_menu.addAction(self.open_file_action)
         file_menu.addAction(self.save_file_action)
         file_menu.addAction(self.save_as_file_action)
+        file_menu.addAction(self.resize_canvas_action)
 
         menu.setStyleSheet("background: #fff;")
 
@@ -107,6 +112,10 @@ class MainWidget(Ui_MainWindow, QWidget):
         new_file_window = NewFileWindow(self.create_new_canvas)
         new_file_window.show()
 
+    def handle_resize_canvas(self):
+        resize_settings_window = ResizeSettingsWindow(self.resize_canvas)
+        resize_settings_window.show()
+
     # Creates new canvas:
     # Resizes canvas content to fit width and height
     # and clears canvas content
@@ -117,9 +126,9 @@ class MainWidget(Ui_MainWindow, QWidget):
         self.canvas_view.repaint()
         self.repaint()
 
-    def resize_canvas(self, width: int, height: int):
-        self.canvas.resize(width, height)
-        self.preview_canvas.resize(width, height)
+    def resize_canvas(self, width: int, height: int, scale_contents: bool = False, smooth_scale: bool = False):
+        self.canvas.resize(width, height, scale_contents, smooth_scale)
+        self.preview_canvas.resize(width, height, scale_contents, smooth_scale)
         self.canvas_view.resize_view(width, height)
         self.current_width = width
         self.current_height = height
