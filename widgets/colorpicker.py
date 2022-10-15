@@ -54,6 +54,9 @@ class ColorPicker(QWidget):
         self.current_saturation = color.saturation()
         self.current_value = color.value()
 
+        self.rgbInput.setText(
+            f"rgb({color.red()}, {color.green()}, {color.blue()})")
+
         self.update_saturation_volume_rect()
 
     def handle_rgb_input(self):
