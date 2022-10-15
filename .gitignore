@@ -21,3 +21,7 @@
 /magicautils/src/*.autosave
 /magicautils/build/
 /*.pyd
+/*.so
+/ui/newfilewindow/main.py
+/ui/newfilewindow/main.pyproject
+/ui/newfilewindow/main.pyproject.user

@@ -10,6 +10,7 @@
 ext_modules=[Extension("magicautils", sources=["src/clamp.cpp", "src/pixelutils.cpp", "src/canvas.cpp", "src/rendercanvases.cpp", "src/main.cpp"], extra_compile_args=["/std:c++20"])])
 ```
 За место ```/std:c++20``` вам нужно подставить флаг, включающий C++20 на вашем компиляторе.
+
 Для GCC 9.x и выше:
 ```python
 ext_modules=[Extension("magicautils", sources=["src/clamp.cpp", "src/pixelutils.cpp", "src/canvas.cpp", "src/rendercanvases.cpp", "src/main.cpp"], extra_compile_args=["--std=c++2a"])])
@@ -34,6 +35,7 @@ python3 setup.py install
 fatal error: Python.h: No such file or directory
 ```
 Это означает, что у вас не установлены инструменты разработчика под ```cpython```.
+
 Для ```apt``` ( *Ubuntu*, *Debian* ):
 ```bash
 sudo apt-get install python3-dev  # первый вариант

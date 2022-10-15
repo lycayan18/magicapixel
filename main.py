@@ -3,13 +3,18 @@ import sys
 from PIL import Image
 from PyQt5.QtWidgets import QApplication, QPushButton, QWidget, QMenuBar, QAction, QFileDialog
 from PyQt5 import QtGui
-from PyQt5.QtCore import QPoint, QRect, QPointF, QUrl
+from PyQt5.QtCore import QPoint, QRect, QPointF, QUrl, Qt
 from widgets.canvasview import CanvasView
+from widgets.newfilewindow import NewFileWindow
 from widgets.colorpicker import ColorPicker
 from utils.color_converters import convert
 from ui.mainwindow.mainwindow import Ui_MainWindow
 from ui.styles.button import CURRENT_BRUSH_BUTTON_STYLESHEET
 import magicautils
+
+QApplication.setAttribute(
+    Qt.ApplicationAttribute.AA_EnableHighDpiScaling, True)
+QApplication.setAttribute(Qt.ApplicationAttribute.AA_UseHighDpiPixmaps, True)
 
 
 class MainWidget(Ui_MainWindow, QWidget):
@@ -54,11 +59,15 @@ class MainWidget(Ui_MainWindow, QWidget):
 
         self.initUI()
 
+    # As QtDesigner does not supports menu bar in QWidget window, we create it here
     def init_menu_bar(self):
         menu = QMenuBar()
         self.vbox.addWidget(menu)
 
         file_menu = menu.addMenu("File")
+
+        self.new_file_action = QAction("New", self)
+        self.new_file_action.triggered.connect(self.handle_new_file)
 
         self.open_file_action = QAction("Open", self)
         self.open_file_action.triggered.connect(self.handle_open_file)
@@ -71,6 +80,7 @@ class MainWidget(Ui_MainWindow, QWidget):
         self.save_as_file_action = QAction("Save as...", self)
         self.save_as_file_action.triggered.connect(self.handle_save_as_file)
 
+        file_menu.addAction(self.new_file_action)
         file_menu.addAction(self.open_file_action)
         file_menu.addAction(self.save_file_action)
         file_menu.addAction(self.save_as_file_action)
@@ -93,6 +103,27 @@ class MainWidget(Ui_MainWindow, QWidget):
         self.connect_brush_button_handler(self.fillButton, "fill")
         self.currentColorButton.clicked.connect(self.open_color_picker)
 
+    def handle_new_file(self):
+        new_file_window = NewFileWindow(self.create_new_canvas)
+        new_file_window.show()
+
+    # Creates new canvas:
+    # Resizes canvas content to fit width and height
+    # and clears canvas content
+    def create_new_canvas(self, width: int, height: int):
+        self.preview_canvas.clear()
+        self.canvas.clear()
+        self.resize_canvas(width, height)
+        self.canvas_view.repaint()
+        self.repaint()
+
+    def resize_canvas(self, width: int, height: int):
+        self.canvas.resize(width, height)
+        self.preview_canvas.resize(width, height)
+        self.canvas_view.resize_view(width, height)
+        self.current_width = width
+        self.current_height = height
+
     def handle_open_file(self):
         filepath: QUrl = QFileDialog.getOpenFileName(
             self, "Save Image", "./", "Images (*.png *.jpg *.jpeg *.bmp *.ico)")[0]
@@ -104,8 +135,7 @@ class MainWidget(Ui_MainWindow, QWidget):
             # TODO: Add error handling ( e.g. when file structure is broken )
             im = Image.open(filepath)
 
-            self.canvas.resize(im.width, im.height)
-            self.preview_canvas.resize(im.width, im.height)
+            self.resize_canvas(im.width, im.height)
             data = im.load()
 
             for x in range(im.width):
@@ -113,12 +143,8 @@ class MainWidget(Ui_MainWindow, QWidget):
                     self.canvas.set_pixel(x, y, convert(data[x, y], im.mode))
 
             self.canvas.copy_content(self.preview_canvas)
-            self.canvas_view.resize_view(im.width, im.height)
             self.canvas_view.repaint()
             self.repaint()
-
-            self.current_width = im.width
-            self.current_height = im.height
 
     def handle_save_file(self):
         data = magicautils.render_canvases(self.current_width,
@@ -170,7 +196,7 @@ class MainWidget(Ui_MainWindow, QWidget):
     def resizeEvent(self, ev: QtGui.QResizeEvent) -> None:
         self.canvas_view.setGeometry(QRect(QPoint(0, 0), ev.size()))
 
-        self.verticalLayoutWidget.resize(ev.size().width(), 20)
+        self.verticalLayoutWidget.resize(ev.size().width(), 23)
 
         # Use max to bound brushPanel and vbox so nothing overlap each other
         self.brushPanel.move(0, max(ev.size().height() / 2 - 250, 25))
