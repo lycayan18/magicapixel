@@ -22,6 +22,8 @@
 /magicautils/build/
 /*.pyd
 /*.so
+/ui/newfilewindow/__pycache__
 /ui/newfilewindow/main.py
 /ui/newfilewindow/main.pyproject
 /ui/newfilewindow/main.pyproject.user
+/ui/resizesettingswindow/
