@@ -181,11 +181,11 @@ class MainWidget(Ui_MainWindow, QWidget):
         self.color_picker.show()
 
     def handle_color_change(self, color: QtGui.QColor):
-        self.current_color = [color.red(), color.green(),
-                              color.blue(), color.alpha()]
+        self.current_color = (color.red(), color.green(),
+                              color.blue(), color.alpha())
 
         self.currentColorButton.setStyleSheet(
-            f"background: rgb({color.red()}, {color.green()}, {color.blue()})")
+            f"background: rgba({color.red()}, {color.green()}, {color.blue()}, {color.alpha()})")
 
     def connect_brush_button_handler(self, button: QPushButton, brush: str):
         button.clicked.connect(

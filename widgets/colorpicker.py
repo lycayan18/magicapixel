@@ -14,6 +14,7 @@ class ColorPicker(QWidget):
         self.current_hue = 0
         self.current_value = 255
         self.current_saturation = 0
+        self.current_alpha = 255
 
         # Flags
         self.changing_saturation_value = False
@@ -43,7 +44,7 @@ class ColorPicker(QWidget):
         self.rgbInput.resize(200, 25)
         self.rgbInput.move(10, 265)
 
-        self.rgbInput.setText("rgb(255, 255, 255)")
+        self.rgbInput.setText("rgba(255, 255, 255, 255)")
         self.rgbInput.textEdited.connect(self.handle_rgb_input)
         self.rgbInput.setStyleSheet(LIGHT_LINEEDIT_STYLESHEET)
 
@@ -55,18 +56,18 @@ class ColorPicker(QWidget):
         self.current_value = color.value()
 
         self.rgbInput.setText(
-            f"rgb({color.red()}, {color.green()}, {color.blue()})")
+            f"rgba({color.red()}, {color.green()}, {color.blue()}, {color.alpha()})")
 
         self.update_saturation_volume_rect()
 
     def handle_rgb_input(self):
         rgbstring = self.rgbInput.text()
 
-        if (not rgbstring.startswith("rgb(") or
+        if (not rgbstring.startswith("rgba(") or
                 not rgbstring.endswith(')')):
             return
 
-        channels = rgbstring[4:-1].split(',')
+        channels = rgbstring[5:-1].split(',')
 
         color = QColor(0, 0, 0)
 
@@ -93,6 +94,13 @@ class ColorPicker(QWidget):
             else:
                 return
 
+        if len(channels) > 3:
+            if channels[2].strip().isdecimal():
+                # Clamp channel value up to 255
+                color.setAlpha(min(int(channels[3]), 255))
+            else:
+                return
+
         hsv = color.toHsv()
 
         self.current_hue = hsv.hue()
@@ -102,6 +110,16 @@ class ColorPicker(QWidget):
 
         self.current_saturation = hsv.saturation()
         self.current_value = hsv.value()
+        self.current_alpha = color.alpha()
+
+        self.color_changed_callback(
+            QColor.fromHsv(
+                self.current_hue,
+                self.current_saturation,
+                self.current_value,
+                self.current_alpha
+            )
+        )
 
         self.update_saturation_volume_rect()
         self.repaint()
@@ -159,7 +177,8 @@ class ColorPicker(QWidget):
                 QColor.fromHsv(
                     self.current_hue,
                     self.current_saturation,
-                    self.current_value
+                    self.current_value,
+                    self.current_alpha
                 )
             )
         elif self.changing_hue:
@@ -170,7 +189,8 @@ class ColorPicker(QWidget):
                 QColor.fromHsv(
                     self.current_hue,
                     self.current_saturation,
-                    self.current_value
+                    self.current_value,
+                    self.current_alpha
                 )
             )
 
@@ -183,10 +203,12 @@ class ColorPicker(QWidget):
         rgb = QColor.fromHsv(
             self.current_hue,
             self.current_saturation,
-            self.current_value
+            self.current_value,
+            self.current_alpha
         )
 
-        self.rgbInput.setText(f"rgb({rgb.red()}, {rgb.green()}, {rgb.blue()})")
+        self.rgbInput.setText(
+            f"rgba({rgb.red()}, {rgb.green()}, {rgb.blue()}, {rgb.alpha()})")
 
     def choose_hue(self, my: int):
         self.current_hue = my / 255 * 359
@@ -216,6 +238,7 @@ class ColorPicker(QWidget):
             QColor.fromHsv(
                 self.current_hue,
                 self.current_saturation,
-                self.current_value
+                self.current_value,
+                self.current_alpha
             )
         )

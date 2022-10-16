@@ -3,6 +3,18 @@
 #include "lerp.h"
 #include "color.h"
 
+/*
+Helper function.
+This function is used in canvas scaling to get correct medium color with alpha taking in account.
+Usually scaled image with help of this function looks better than without that function.
+*/
+void blendColorWithWhite(color4_t *color)
+{
+    color->r = lerp(255.0f, float(color->r), float(color->a) / 255.0f);
+    color->g = lerp(255.0f, float(color->g), float(color->a) / 255.0f);
+    color->b = lerp(255.0f, float(color->b), float(color->a) / 255.0f);
+}
+
 void setPixel(unsigned char *data, int x, int y, int width, unsigned int r, unsigned int g, unsigned int b, unsigned int a)
 {
     unsigned int pixelIndex = x + y * width;
@@ -64,6 +76,11 @@ void getPixelSmoothColor(unsigned char *data, float x, float y, int width, int h
             v = s;
         }
     }
+
+    blendColorWithWhite(&s);
+    blendColorWithWhite(&t);
+    blendColorWithWhite(&u);
+    blendColorWithWhite(&v);
 
     color4_t out = lerpRGB2d(s, t, u, v, x - truncf(x), y - truncf(y));
     *r = out.r;
