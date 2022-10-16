@@ -182,6 +182,10 @@ class CanvasView(QOpenGLWidget):
         self.canvas_width = width
         self.canvas_height = height
 
+    def update(self):
+        self.update_view_texture()
+        self.repaint()
+
     def get_canvas_point(self, mouse: QPoint) -> QPoint:
         # To avoid inaccuracy we do all calculations in float
         out: QPointF = (QPointF(mouse) - QPointF(self.shift) -

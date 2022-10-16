@@ -28,6 +28,7 @@ extern "C"
     extern PyObject *canvas_drawLine(canvasobject *self, PyObject *args);
     extern PyObject *canvas_fill(canvasobject *self, PyObject *args);
     extern PyObject *canvas_clear(canvasobject *self, PyObject *args);
+    extern PyObject *canvas_clone(canvasobject *self, PyObject *args);
 }
 
 #endif // CANVAS_H

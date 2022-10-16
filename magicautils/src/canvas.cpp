@@ -763,4 +763,23 @@ PyObject *canvas_clear(canvasobject *self, PyObject *args)
     return Py_None;
 }
 
+PyObject *canvas_clone(canvasobject *self, PyObject *args)
+{
+    // Create new Canvas instance
+    PyObject *argsList = Py_BuildValue("ii", self->width, self->height);
+    PyObject *canvasObject = PyObject_CallObject((PyObject*)&canvas_type, argsList);
+
+    Py_DECREF(argsList);
+
+    // Copy content
+    canvasobject *canvas = (canvasobject*)canvasObject;
+
+    for(unsigned int i = 0; i < self->width * self->height * 4; i++)
+    {
+        canvas->data[i] = self->data[i];
+    }
+
+    return canvasObject;
+}
+
 }

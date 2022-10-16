@@ -39,6 +39,7 @@ extern "C"
         {"draw_line",       (PyCFunction)canvas_drawLine,       METH_VARARGS,   PyDoc_STR("Canvas.draw_line(x0: int, y0: int, x1: int, y1: int, color: tuple[int, int, int, int]): Draws line from (x0, y0) to (x1, y1) with provided color ( color replaces with provided, without any alpha blending ).")},
         {"fill",            (PyCFunction)canvas_fill,           METH_VARARGS,   PyDoc_STR("Canvas.fill(x: int, y: int, color: tuple[int, int, int, int]): Flood fills starting from point (x, y) with provided color.")},
         {"clear",           (PyCFunction)canvas_clear,          METH_NOARGS,    PyDoc_STR("Canvas.clear(): Clears canvas image data with color (0, 0, 0, 0).")},
+        {"clone",           (PyCFunction)canvas_clone,          METH_NOARGS,    PyDoc_STR("Canvas.clone(): Creates new instance of canvas and copies data to it.")},
         {NULL, NULL, 0, NULL}
     };
 

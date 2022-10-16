@@ -9,6 +9,8 @@ from widgets.newfilewindow import NewFileWindow
 from widgets.colorpicker import ColorPicker
 from widgets.resizesettingswindow import ResizeSettingsWindow
 from utils.color_converters import convert
+from utils.state_manager import StateManager
+from utils.keyboard_actions_manager import KeyboardActionsManager
 from ui.mainwindow.mainwindow import Ui_MainWindow
 from ui.styles.button import CURRENT_BRUSH_BUTTON_STYLESHEET
 import magicautils
@@ -21,6 +23,12 @@ QApplication.setAttribute(Qt.ApplicationAttribute.AA_UseHighDpiPixmaps, True)
 class MainWidget(Ui_MainWindow, QWidget):
     def __init__(self):
         super().__init__()
+
+        self.state_manager = StateManager()
+        self.keyboard_actions_manager = KeyboardActionsManager()
+
+        self.keyboard_actions_manager.subscribe("Ctrl+Z", self.pop_state)
+        self.keyboard_actions_manager.subscribe("Ctrl+Y", self.recover_state)
 
         # Current editing file
         self.current_file = None
@@ -59,6 +67,7 @@ class MainWidget(Ui_MainWindow, QWidget):
         }
 
         self.initUI()
+        self.save_state()
 
     # As QtDesigner does not supports menu bar in QWidget window, we create it here
     def init_menu_bar(self):
@@ -113,8 +122,70 @@ class MainWidget(Ui_MainWindow, QWidget):
         new_file_window.show()
 
     def handle_resize_canvas(self):
-        resize_settings_window = ResizeSettingsWindow(self.resize_canvas)
+        resize_settings_window = ResizeSettingsWindow(
+            self.resize_canvas_and_save_state)
         resize_settings_window.show()
+
+    def save_state(self):
+        self.state_manager.push_state(self.get_state())
+
+    # Return to previous state ( in other words cancel last operation )
+    def pop_state(self):
+        state = self.state_manager.pop_state()
+
+        if state is not None:
+            self.set_state(state)
+
+    # Return to next state ( in other words recover cancelled operation )
+    def recover_state(self):
+        state = self.state_manager.recover_last_state()
+
+        if state is not None:
+            self.set_state(state)
+
+    def get_state(self):
+        state = {
+            "current_width": self.current_width,
+            "current_height": self.current_height,
+            "current_file": self.current_file,
+            "canvases": [self.canvas.clone()]
+        }
+
+        return state
+
+    def set_state(self, state):
+        self.current_width = state["current_width"]
+        self.current_height = state["current_height"]
+        self.current_file = state["current_file"]
+
+        self.save_file_action.setDisabled(self.current_file is None)
+        self.update_window_title()
+
+        # Resize view
+        self.canvas.resize(self.current_width, self.current_height)
+        self.preview_canvas.resize(self.current_width, self.current_height)
+        self.canvas_view.resize_view(self.current_width, self.current_height)
+
+        # Copy content
+        state["canvases"][0].copy_content(self.canvas)
+        self.canvas.copy_content(self.preview_canvas)
+
+        # Redraw
+        self.canvas_view.update()
+        self.repaint()
+
+    def keyPressEvent(self, ev: QtGui.QKeyEvent) -> None:
+        if ev.isAutoRepeat():
+            return super().keyPressEvent(ev)
+
+        self.keyboard_actions_manager.keypress_event(ev.key())
+
+        return super().keyPressEvent(ev)
+
+    def keyReleaseEvent(self, ev: QtGui.QKeyEvent) -> None:
+        self.keyboard_actions_manager.keyrelease_event(ev.key())
+
+        return super().keyReleaseEvent(ev)
 
     # Creates new canvas:
     # Resizes canvas content to fit width and height
@@ -125,6 +196,26 @@ class MainWidget(Ui_MainWindow, QWidget):
         self.resize_canvas(width, height)
         self.canvas_view.repaint()
         self.repaint()
+
+        self.current_file = None
+        self.save_file_action.setDisabled(True)
+
+        self.update_window_title()
+
+        self.save_state()
+
+    def update_window_title(self):
+        if self.current_file is None:
+            self.setWindowTitle("Magica Pixel")
+            return
+
+        filename = self.current_file.replace("\\", "/", -1).split("/")[-1]
+
+        self.setWindowTitle(f"{filename} - Magica Pixel")
+
+    def resize_canvas_and_save_state(self, width: int, height: int, scale_contents: bool, smooth_scale: bool):
+        self.resize_canvas(width, height, scale_contents, smooth_scale)
+        self.save_state()
 
     def resize_canvas(self, width: int, height: int, scale_contents: bool = False, smooth_scale: bool = False):
         self.canvas.resize(width, height, scale_contents, smooth_scale)
@@ -155,6 +246,10 @@ class MainWidget(Ui_MainWindow, QWidget):
             self.canvas_view.repaint()
             self.repaint()
 
+            self.save_state()
+
+            self.update_window_title()
+
     def handle_save_file(self):
         data = magicautils.render_canvases(self.current_width,
                                            self.current_height, [self.canvas])
@@ -172,6 +267,8 @@ class MainWidget(Ui_MainWindow, QWidget):
             self.save_file_action.setEnabled(True)
 
             self.handle_save_file()
+
+            self.update_window_title()
 
     # Opens color picker window
 
@@ -308,6 +405,7 @@ class MainWidget(Ui_MainWindow, QWidget):
     def draw_to_canvas(self):
         self.canvas_view.highlight_pixel(self.mouse_state["current_pos"])
         self.preview_canvas.copy_content(self.canvas)
+        self.save_state()
 
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
         self.color_picker.close()
