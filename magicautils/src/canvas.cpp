@@ -537,12 +537,12 @@ PyObject *canvas_drawLine(canvasobject *self, PyObject *args)
     a = clamp(a, 0, 255);
 
     // If you remove these rows you can get minor bug: sometimes first and last point may not be rendered
-    if(x0 >= 0 && x0 < self->width && y0 >= 0 and y0 < self->height)
+    if(x0 >= 0 && x0 < self->width && y0 >= 0 && y0 < self->height)
     {
         setPixel(self->data, x0, y0, self->width, r, g, b, a);
     }
 
-    if(x1 >= 0 && x1 < self->width && y1 >= 0 and y1 < self->height)
+    if(x1 >= 0 && x1 < self->width && y1 >= 0 && y1 < self->height)
     {
         setPixel(self->data, x1, y1, self->width, r, g, b, a);
     }
