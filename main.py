@@ -305,7 +305,7 @@ class MainWidget(Ui_MainWindow, QWidget):
         self.verticalLayoutWidget.resize(ev.size().width(), 23)
 
         # Use max to bound brushPanel and vbox so nothing overlap each other
-        self.brushPanel.move(0, max(ev.size().height() / 2 - 250, 25))
+        self.brushPanel.move(0, max(ev.size().height() // 2 - 250, 25))
 
     def mousePressEvent(self, ev: QtGui.QMouseEvent) -> None:
         # For convenience let's always close the color picker

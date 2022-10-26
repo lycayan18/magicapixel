@@ -16,9 +16,10 @@ class StateManager:
 
     def pop_state(self):
         if self.current_state_index <= 0:
+            self.current_state_index = -1
             return None
 
-        # Do "soft" deletion of state to have ability to recover it
+        # Do "soft" deletion of state to have ability recover it
         self.current_state_index -= 1
 
         return self.states[self.current_state_index]
@@ -29,5 +30,11 @@ class StateManager:
 
         # Recover "soft" deleted state
         self.current_state_index += 1
+
+        # If all states are "soft" deleted and we're in starting point now, then automatically move to
+        # second state. If you won't do that, you have to recover last state two times to go to first
+        # state change.
+        if self.current_state_index == 0 and len(self.states) > 1:
+            self.current_state_index = 1
 
         return self.states[self.current_state_index]

@@ -127,9 +127,11 @@ class CanvasView(QOpenGLWidget):
             gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_EDGE)
 
         gl.glTexParameteri(
-            gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_NEAREST)
+            gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_NEAREST_MIPMAP_NEAREST)
         gl.glTexParameteri(
             gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_NEAREST)
+
+        gl.glGenerateMipmap(gl.GL_TEXTURE_2D)
 
         return buffer
 
@@ -137,6 +139,8 @@ class CanvasView(QOpenGLWidget):
         gl.glBindTexture(gl.GL_TEXTURE_2D, texture)
         gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGBA, width,
                         height, 0, gl.GL_RGBA, gl.GL_UNSIGNED_BYTE, data)
+
+        gl.glGenerateMipmap(gl.GL_TEXTURE_2D)
 
     def paintGL(self) -> None:
         gl.glClearColor(0.1, 0.1, 0.1, 1.0)
@@ -158,11 +162,13 @@ class CanvasView(QOpenGLWidget):
         gl.glDrawArrays(gl.GL_TRIANGLES, 0, 6)
 
     def update_view_texture(self):
-        texture_data = magicautils.render_canvases(
+        texture_data: bytes = magicautils.render_canvases(
             self.canvas_width, self.canvas_height, self.canvases,
             self.highlighted_pixel.x(), self.highlighted_pixel.y())
         self.set_texture_data(
             self.view_texture, self.canvas_width, self.canvas_height, texture_data)
+
+        del texture_data
 
     # Canvas view related functions
 
@@ -182,7 +188,7 @@ class CanvasView(QOpenGLWidget):
         self.canvas_width = width
         self.canvas_height = height
 
-    def update(self):
+    def update_view(self):
         self.update_view_texture()
         self.repaint()
 

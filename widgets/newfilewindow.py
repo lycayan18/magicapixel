@@ -41,13 +41,14 @@ class NewFileWindow(QWidget, Ui_NewFileWindow):
             # To avoid valueChange callback triggering when changing widthBox value ( and avoid
             # cyclic value changing ), we block signals
             self.widthBox.blockSignals(True)
-            self.widthBox.setValue(self.heightBox.value() * self.aspect_ratio)
+            self.widthBox.setValue(
+                int(self.heightBox.value() * self.aspect_ratio))
             self.widthBox.blockSignals(False)
         elif characteristic == "height":
             # To avoid valueChange callback triggering when changing heightBox value ( and avoid
             # cyclic value changing ), we block signals
             self.heightBox.blockSignals(True)
-            self.heightBox.setValue(self.widthBox.value() / self.aspect_ratio)
+            self.heightBox.setValue(self.widthBox.value() // self.aspect_ratio)
             self.heightBox.blockSignals(False)
 
     def handle_done_button_clicked(self):

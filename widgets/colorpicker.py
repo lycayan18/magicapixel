@@ -114,10 +114,10 @@ class ColorPicker(QWidget):
 
         self.color_changed_callback(
             QColor.fromHsv(
-                self.current_hue,
-                self.current_saturation,
-                self.current_value,
-                self.current_alpha
+                int(self.current_hue),
+                int(self.current_saturation),
+                int(self.current_value),
+                int(self.current_alpha)
             )
         )
 
@@ -137,7 +137,7 @@ class ColorPicker(QWidget):
             for x in range(30):
                 self.hue_line.setPixelColor(
                     x, h,
-                    QColor.fromHsv(h / 255 * 359, 255, 255)
+                    QColor.fromHsv(int(h / 255 * 359), 255, 255)
                 )
 
     def update_saturation_volume_rect(self):
@@ -211,7 +211,7 @@ class ColorPicker(QWidget):
             f"rgba({rgb.red()}, {rgb.green()}, {rgb.blue()}, {rgb.alpha()})")
 
     def choose_hue(self, my: int):
-        self.current_hue = my / 255 * 359
+        self.current_hue = int(my / 255 * 359)
         self.update_saturation_volume_rect()
 
     def paintEvent(self, ev: QPaintEvent) -> None:
