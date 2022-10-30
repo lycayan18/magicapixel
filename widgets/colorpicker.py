@@ -95,7 +95,7 @@ class ColorPicker(QWidget):
                 return
 
         if len(channels) > 3:
-            if channels[2].strip().isdecimal():
+            if channels[3].strip().isdecimal():
                 # Clamp channel value up to 255
                 color.setAlpha(min(int(channels[3]), 255))
             else:

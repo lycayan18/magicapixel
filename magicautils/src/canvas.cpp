@@ -1,5 +1,6 @@
 #include <math.h>
 #include <vector>
+#include <stdlib.h>
 #include "canvas.h"
 #include "vec2.h"
 #include "clamp.h"
@@ -412,10 +413,14 @@ PyObject *canvas_copyContent(canvasobject *self, PyObject *args)
         // Check that width and height are identical to avoid segmentation fault
         if(targetCanvas->width == self->width && targetCanvas->height == self->height)
         {
-            for(unsigned int i = 0; i < self->width * self->height * 4; i++)
+            // FIXME: Think about effective copying method
+            unsigned int *target = (unsigned int*)targetCanvas->data;
+            unsigned int *data = (unsigned int*)self->data;
+            for(unsigned int i = 0; i < self->width * self->height; i++)
             {
-                targetCanvas->data[i] = self->data[i];
+                target[i] = data[i];
             }
+            // memcpy(targetCanvas->data, self->data, self->width * self->height * 4);
         }
     }
     else

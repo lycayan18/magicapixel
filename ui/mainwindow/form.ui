@@ -227,6 +227,267 @@ QPushButton {
    </property>
    <layout class="QVBoxLayout" name="vbox"/>
   </widget>
+  <widget class="QGroupBox" name="layersPanel">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>630</x>
+     <y>25</y>
+     <width>170</width>
+     <height>500</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QGroupBox {
+	background: #333;
+	border: none;
+	border-top-left-radius: 10px;
+	border-bottom-left-radius: 10px;
+}
+
+* {
+	color: white;
+}
+
+QPushButton {
+	background: #222;
+	border: none;
+	border-radius: 5px;
+}
+
+QLabel {
+	background: transparent;
+}
+
+QComboBox {
+	background: #222;
+	border: none;
+	border-radius: 5px;
+}
+
+QLineEdit {
+	background: #222;
+	border: none;
+	border-radius: 5px;
+}</string>
+   </property>
+   <property name="title">
+    <string/>
+   </property>
+   <property name="flat">
+    <bool>true</bool>
+   </property>
+   <widget class="QListWidget" name="layersList">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>35</y>
+      <width>171</width>
+      <height>261</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QListWidget {
+	border: none;
+	background: #222;
+	color: white;
+}</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>5</x>
+      <y>15</y>
+      <width>41</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Слои:</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="addLayer">
+    <property name="geometry">
+     <rect>
+      <x>85</x>
+      <y>299</y>
+      <width>80</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="cursor">
+     <cursorShape>PointingHandCursor</cursorShape>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">border-left: 1px solid #888;
+border-top-left-radius: 0;
+border-bottom-left-radius: 0;</string>
+    </property>
+    <property name="text">
+     <string>Добавить</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="removeLayer">
+    <property name="geometry">
+     <rect>
+      <x>5</x>
+      <y>299</y>
+      <width>80</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="cursor">
+     <cursorShape>PointingHandCursor</cursorShape>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">border-right: 1px solid #888;
+border-top-right-radius: 0;
+border-bottom-right-radius: 0;</string>
+    </property>
+    <property name="text">
+     <string>Удалить</string>
+    </property>
+   </widget>
+   <widget class="QGroupBox" name="layerSettings">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>5</x>
+      <y>335</y>
+      <width>161</width>
+      <height>101</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QGroupBox {
+	color: white;
+}
+
+*::disabled {
+	color: #888;
+}</string>
+    </property>
+    <property name="title">
+     <string>Слой</string>
+    </property>
+    <widget class="QComboBox" name="alphaBlending">
+     <property name="geometry">
+      <rect>
+       <x>85</x>
+       <y>45</y>
+       <width>70</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="sizeAdjustPolicy">
+      <enum>QComboBox::AdjustToContentsOnFirstShow</enum>
+     </property>
+     <property name="frame">
+      <bool>true</bool>
+     </property>
+     <item>
+      <property name="text">
+       <string>ADD</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>OVER</string>
+      </property>
+     </item>
+    </widget>
+    <widget class="QLabel" name="label_3">
+     <property name="geometry">
+      <rect>
+       <x>3</x>
+       <y>45</y>
+       <width>81</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Alpha blending:</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="moveLayerUp">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>75</y>
+       <width>80</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="cursor">
+      <cursorShape>PointingHandCursor</cursorShape>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-right: 1px solid #888;
+border-top-right-radius: 0;
+border-bottom-right-radius: 0;</string>
+     </property>
+     <property name="text">
+      <string>Вверх</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="moveLayerDown">
+     <property name="geometry">
+      <rect>
+       <x>80</x>
+       <y>75</y>
+       <width>80</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="cursor">
+      <cursorShape>PointingHandCursor</cursorShape>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-left: 1px solid #888;
+border-top-left-radius: 0;
+border-bottom-left-radius: 0;</string>
+     </property>
+     <property name="text">
+      <string>Вниз</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="layerName">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>20</y>
+       <width>160</width>
+       <height>20</height>
+      </rect>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QCheckBox" name="displayAllLayers">
+    <property name="geometry">
+     <rect>
+      <x>5</x>
+      <y>460</y>
+      <width>151</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="autoFillBackground">
+     <bool>false</bool>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background: transparent;
+color: white;</string>
+    </property>
+    <property name="text">
+     <string>Отображать все слои</string>
+    </property>
+   </widget>
+  </widget>
  </widget>
  <resources/>
  <connections/>

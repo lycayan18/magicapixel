@@ -1,18 +1,21 @@
 import sys
+import time
 
 from PIL import Image
-from PyQt5.QtWidgets import QApplication, QPushButton, QWidget, QMenuBar, QAction, QFileDialog
+from PyQt5.QtWidgets import QApplication, QPushButton, QWidget, QMenuBar, QAction, QFileDialog, QListWidgetItem
 from PyQt5 import QtGui
 from PyQt5.QtCore import QPoint, QRect, QPointF, QUrl, Qt
 from widgets.canvasview import CanvasView
 from widgets.newfilewindow import NewFileWindow
 from widgets.colorpicker import ColorPicker
 from widgets.resizesettingswindow import ResizeSettingsWindow
-from utils.color_converters import convert
 from utils.state_manager import StateManager
 from utils.keyboard_actions_manager import KeyboardActionsManager
+from utils.canvas_manager import CanvasManager
+from utils.color_converters import convert
 from ui.mainwindow.mainwindow import Ui_MainWindow
 from ui.styles.button import CURRENT_BRUSH_BUTTON_STYLESHEET
+from constants import blending as AlphaBlendingModes
 import magicautils
 
 QApplication.setAttribute(
@@ -37,8 +40,18 @@ class MainWidget(Ui_MainWindow, QWidget):
         self.current_width = 96
         self.current_height = 96
 
-        self.canvas = magicautils.Canvas(
-            self.current_width, self.current_height)
+        self.canvases: list[list[magicautils.Canvas, str, int]] = list()
+
+        self.canvases.append([
+            magicautils.Canvas(self.current_width, self.current_height),
+            "Main Layer",
+            AlphaBlendingModes.OVER
+        ])
+
+        self.canvas_manager = CanvasManager(self.canvases)
+
+        self.canvas = self.canvas_manager.get_current_canvas()
+
         self.color_picker = ColorPicker(self.handle_color_change)
 
         # Canvas for previewing what you're going to draw
@@ -48,6 +61,7 @@ class MainWidget(Ui_MainWindow, QWidget):
         self.canvas_view = CanvasView(
             self.current_width, self.current_height,
             self.preview_canvas,
+            self.canvases,
             parent=self
         )
 
@@ -117,6 +131,107 @@ class MainWidget(Ui_MainWindow, QWidget):
         self.connect_brush_button_handler(self.fillButton, "fill")
         self.currentColorButton.clicked.connect(self.open_color_picker)
 
+        self.layersList.itemSelectionChanged.connect(self.handle_item_change)
+        self.addLayer.clicked.connect(self.handle_add_layer)
+        self.removeLayer.clicked.connect(self.handle_remove_layer)
+        self.layerName.textEdited.connect(self.handle_layer_rename)
+        self.alphaBlending.currentIndexChanged.connect(
+            self.handle_alpha_blending_change)
+        self.moveLayerUp.clicked.connect(lambda: self.move_layer(-1))
+        self.moveLayerDown.clicked.connect(lambda: self.move_layer(1))
+
+        self.displayAllLayers.stateChanged.connect(
+            self.handle_display_all_layers_state_changed)
+
+        self.update_layers_list()
+
+    def update_layers_list(self):
+        self.layersList.clear()
+
+        for canvas, name, settings in self.canvases:
+            item = QListWidgetItem(name)
+            item.setFlags(Qt.ItemFlag.ItemIsEnabled |
+                          Qt.ItemFlag.ItemIsSelectable)
+            self.layersList.addItem(item)
+
+    def handle_add_layer(self):
+        self.canvas_manager.add_canvas(
+            magicautils.Canvas(self.current_width, self.current_height),
+            "Layer",
+            AlphaBlendingModes.OVER
+        )
+
+        self.update_layers_list()
+        self.save_state()
+
+    def handle_remove_layer(self):
+        selected_items = self.layersList.selectedItems()
+
+        if len(selected_items) > 0:
+            item = selected_items[0]
+
+            self.canvas_manager.remove_canvas(self.layersList.row(item))
+            self.canvas = self.canvas_manager.get_current_canvas()
+            self.update_layers_list()
+            self.save_state()
+
+    def move_layer(self, direction: int):
+        selected_items = self.layersList.selectedItems()
+
+        if len(selected_items) > 0:
+            item = selected_items[0]
+            index = self.layersList.row(item)
+
+            self.canvas_manager.move_canvas(index, index + direction)
+            self.update_layers_list()
+
+            # Update preview canvas
+            self.canvas_manager.set_current_editing_canvas(index + direction)
+            self.canvas_view.set_current_previewing_layer(index + direction)
+            self.canvas = self.canvas_manager.get_current_canvas()
+            self.canvas.copy_content(self.preview_canvas)
+
+            # Update view
+            self.canvas_view.update_view()
+
+    def handle_layer_rename(self):
+        selected_item = self.layersList.selectedItems()[0]
+        item_index = self.layersList.selectedIndexes()[0].row()
+
+        selected_item.setText(self.layerName.text())
+        self.canvas_manager.set_canvas_name(item_index, self.layerName.text())
+
+        # Do not update list widget as we can loose focus in this case
+
+    def handle_alpha_blending_change(self, index):
+        current_canvas_index = self.canvas_manager.get_current_canvas_index()
+        self.canvas_manager.set_canvas_settings(current_canvas_index, index)
+
+        self.canvas_view.update_view()
+
+    def handle_item_change(self):
+        selected_items = self.layersList.selectedItems()
+
+        if len(selected_items) > 0:
+            row = self.layersList.selectedIndexes()[0].row()
+
+            self.layerSettings.setEnabled(True)
+            self.layerName.setText(selected_items[0].text())
+
+            self.canvas_manager.set_current_editing_canvas(row)
+            self.canvas_view.set_current_previewing_layer(row)
+            self.canvas = self.canvas_manager.get_current_canvas()
+            self.canvas.copy_content(self.preview_canvas)
+            self.canvas_view.update_view()
+
+            self.alphaBlending.setCurrentIndex(
+                self.canvas_manager.get_current_canvas_settings())
+        else:
+            self.layerSettings.setDisabled(True)
+
+    def handle_display_all_layers_state_changed(self, state):
+        self.canvas_view.set_display_all_layers(state == Qt.CheckState.Checked)
+
     def handle_new_file(self):
         new_file_window = NewFileWindow(self.create_new_canvas)
         new_file_window.show()
@@ -148,7 +263,8 @@ class MainWidget(Ui_MainWindow, QWidget):
             "current_width": self.current_width,
             "current_height": self.current_height,
             "current_file": self.current_file,
-            "canvases": [self.canvas.clone()]
+            "canvases": [(canvas.clone(), name, settings) for canvas, name, settings in self.canvases],
+            "current_canvas": self.canvas_manager.get_current_canvas_index()
         }
 
         return state
@@ -161,17 +277,24 @@ class MainWidget(Ui_MainWindow, QWidget):
         self.save_file_action.setDisabled(self.current_file is None)
         self.update_window_title()
 
+        self.canvases.clear()
+
+        for canvas, name, settings in state["canvases"]:
+            self.canvases.append([canvas.clone(), name, settings])
+
+        self.canvas_manager.set_current_editing_canvas(state["current_canvas"])
+
         # Resize view
-        self.canvas.resize(self.current_width, self.current_height)
         self.preview_canvas.resize(self.current_width, self.current_height)
         self.canvas_view.resize_view(self.current_width, self.current_height)
 
         # Copy content
-        state["canvases"][0].copy_content(self.canvas)
+        self.canvas = self.canvas_manager.get_current_canvas()
         self.canvas.copy_content(self.preview_canvas)
 
         # Redraw
-        self.canvas_view.update()
+        self.update_layers_list()
+        self.canvas_view.update_view()
         self.repaint()
 
     def keyPressEvent(self, ev: QtGui.QKeyEvent) -> None:
@@ -191,9 +314,19 @@ class MainWidget(Ui_MainWindow, QWidget):
     # Resizes canvas content to fit width and height
     # and clears canvas content
     def create_new_canvas(self, width: int, height: int):
-        self.preview_canvas.clear()
-        self.canvas.clear()
+        self.canvases.clear()
+        self.canvases.append([
+            magicautils.Canvas(width, height),
+            "Main Layer",
+            AlphaBlendingModes.OVER
+        ])
         self.resize_canvas(width, height)
+        self.canvas_manager.set_current_editing_canvas(0)
+        self.canvas_view.set_current_previewing_layer(0)
+
+        self.canvas = self.canvas_manager.get_current_canvas()
+
+        self.preview_canvas.clear()
         self.canvas_view.repaint()
         self.repaint()
 
@@ -201,7 +334,7 @@ class MainWidget(Ui_MainWindow, QWidget):
         self.save_file_action.setDisabled(True)
 
         self.update_window_title()
-
+        self.update_layers_list()
         self.save_state()
 
     def update_window_title(self):
@@ -218,7 +351,9 @@ class MainWidget(Ui_MainWindow, QWidget):
         self.save_state()
 
     def resize_canvas(self, width: int, height: int, scale_contents: bool = False, smooth_scale: bool = False):
-        self.canvas.resize(width, height, scale_contents, smooth_scale)
+        for canvas, name, settings in self.canvases:
+            canvas.resize(width, height, scale_contents, smooth_scale)
+
         self.preview_canvas.resize(width, height, scale_contents, smooth_scale)
         self.canvas_view.resize_view(width, height)
         self.current_width = width
@@ -235,12 +370,16 @@ class MainWidget(Ui_MainWindow, QWidget):
             # TODO: Add error handling ( e.g. when file structure is broken )
             im = Image.open(filepath)
 
+            # FIXME: Do something with loading image in current layer
             self.resize_canvas(im.width, im.height)
             data = im.load()
 
             for x in range(im.width):
                 for y in range(im.height):
                     self.canvas.set_pixel(x, y, convert(data[x, y], im.mode))
+
+            self.canvases.clear()
+            self.canvases.append
 
             self.canvas.copy_content(self.preview_canvas)
             self.canvas_view.repaint()
@@ -251,8 +390,15 @@ class MainWidget(Ui_MainWindow, QWidget):
             self.update_window_title()
 
     def handle_save_file(self):
+        canvases = list()
+        alpha_blendings = list()
+
+        for canvas, name, alpha_blending in self.canvases:
+            canvases.append(canvas)
+            alpha_blendings.append(alpha_blending)
+
         data = magicautils.render_canvases(self.current_width,
-                                           self.current_height, [self.canvas])
+                                           self.current_height, canvases, alpha_blendings)
 
         im = Image.frombytes(
             "RGBA", (self.current_width, self.current_height), data, "raw")
@@ -303,9 +449,12 @@ class MainWidget(Ui_MainWindow, QWidget):
         self.canvas_view.setGeometry(QRect(QPoint(0, 0), ev.size()))
 
         self.verticalLayoutWidget.resize(ev.size().width(), 23)
-
         # Use max to bound brushPanel and vbox so nothing overlap each other
         self.brushPanel.move(0, max(ev.size().height() // 2 - 250, 25))
+
+        # Use max to bound brushPanel and vbox so nothing overlap each other
+        self.layersPanel.move(ev.size().width() - 170,
+                              max(ev.size().height() // 2 - 250, 25))
 
     def mousePressEvent(self, ev: QtGui.QMouseEvent) -> None:
         # For convenience let's always close the color picker

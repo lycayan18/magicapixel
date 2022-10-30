@@ -16,12 +16,10 @@ class Ui_MainWindow(object):
         MainWindow.setObjectName("MainWindow")
         MainWindow.setWindowModality(QtCore.Qt.WindowModal)
         MainWindow.resize(800, 525)
-        sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(
-            MainWindow.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(MainWindow.sizePolicy().hasHeightForWidth())
         MainWindow.setSizePolicy(sizePolicy)
         MainWindow.setMinimumSize(QtCore.QSize(400, 525))
         MainWindow.setAutoFillBackground(False)
@@ -32,17 +30,17 @@ class Ui_MainWindow(object):
         self.brushPanel.setMaximumSize(QtCore.QSize(115, 16777215))
         self.brushPanel.setAutoFillBackground(False)
         self.brushPanel.setStyleSheet("QGroupBox {\n"
-                                      "    background: #333;\n"
-                                      "    border: none;\n"
-                                      "    border-top-right-radius: 10px;\n"
-                                      "    border-bottom-right-radius: 10px;\n"
-                                      "}\n"
-                                      "\n"
-                                      "QPushButton {\n"
-                                      "    background: #999;\n"
-                                      "    border: none;\n"
-                                      "    border-radius: 5px;\n"
-                                      "}")
+"    background: #333;\n"
+"    border: none;\n"
+"    border-top-right-radius: 10px;\n"
+"    border-bottom-right-radius: 10px;\n"
+"}\n"
+"\n"
+"QPushButton {\n"
+"    background: #999;\n"
+"    border: none;\n"
+"    border-radius: 5px;\n"
+"}")
         self.brushPanel.setTitle("")
         self.brushPanel.setFlat(True)
         self.brushPanel.setCheckable(False)
@@ -51,35 +49,30 @@ class Ui_MainWindow(object):
         self.penButton.setGeometry(QtCore.QRect(10, 10, 42, 42))
         self.penButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.penButton.setStyleSheet("QPushButton {\n"
-                                     "    background: #ff00ae;\n"
-                                     "}")
+"    background: #ff00ae;\n"
+"}")
         self.penButton.setText("")
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("assets/icons/pen.png"),
-                       QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("assets/icons/pen.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.penButton.setIcon(icon)
         self.penButton.setIconSize(QtCore.QSize(24, 24))
         self.penButton.setFlat(False)
         self.penButton.setObjectName("penButton")
         self.strokeButton = QtWidgets.QPushButton(self.brushPanel)
         self.strokeButton.setGeometry(QtCore.QRect(60, 10, 42, 42))
-        self.strokeButton.setCursor(
-            QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.strokeButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.strokeButton.setText("")
         icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap("assets/icons/stroke.png"),
-                        QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon1.addPixmap(QtGui.QPixmap("assets/icons/stroke.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.strokeButton.setIcon(icon1)
         self.strokeButton.setIconSize(QtCore.QSize(24, 24))
         self.strokeButton.setObjectName("strokeButton")
         self.pickerButton = QtWidgets.QPushButton(self.brushPanel)
         self.pickerButton.setGeometry(QtCore.QRect(10, 60, 42, 42))
-        self.pickerButton.setCursor(
-            QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.pickerButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.pickerButton.setText("")
         icon2 = QtGui.QIcon()
-        icon2.addPixmap(QtGui.QPixmap("assets/icons/picker.png"),
-                        QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon2.addPixmap(QtGui.QPixmap("assets/icons/picker.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.pickerButton.setIcon(icon2)
         self.pickerButton.setIconSize(QtCore.QSize(24, 24))
         self.pickerButton.setObjectName("pickerButton")
@@ -88,24 +81,129 @@ class Ui_MainWindow(object):
         self.fillButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.fillButton.setText("")
         icon3 = QtGui.QIcon()
-        icon3.addPixmap(QtGui.QPixmap("assets/icons/fill.png"),
-                        QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon3.addPixmap(QtGui.QPixmap("assets/icons/fill.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.fillButton.setIcon(icon3)
         self.fillButton.setIconSize(QtCore.QSize(24, 24))
         self.fillButton.setObjectName("fillButton")
         self.currentColorButton = QtWidgets.QPushButton(self.brushPanel)
         self.currentColorButton.setGeometry(QtCore.QRect(10, 430, 41, 41))
-        self.currentColorButton.setCursor(
-            QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.currentColorButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.currentColorButton.setStyleSheet("background: #fff;")
         self.currentColorButton.setText("")
         self.currentColorButton.setObjectName("currentColorButton")
         self.verticalLayoutWidget = QtWidgets.QWidget(MainWindow)
-        self.verticalLayoutWidget.setGeometry(QtCore.QRect(0, 0, 801, 25))
+        self.verticalLayoutWidget.setGeometry(QtCore.QRect(0, 0, 801, 21))
         self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
         self.vbox = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
         self.vbox.setContentsMargins(0, 0, 0, 0)
         self.vbox.setObjectName("vbox")
+        self.layersPanel = QtWidgets.QGroupBox(MainWindow)
+        self.layersPanel.setEnabled(True)
+        self.layersPanel.setGeometry(QtCore.QRect(630, 25, 170, 500))
+        self.layersPanel.setStyleSheet("QGroupBox {\n"
+"    background: #333;\n"
+"    border: none;\n"
+"    border-top-left-radius: 10px;\n"
+"    border-bottom-left-radius: 10px;\n"
+"}\n"
+"\n"
+"* {\n"
+"    color: white;\n"
+"}\n"
+"\n"
+"QPushButton {\n"
+"    background: #222;\n"
+"    border: none;\n"
+"    border-radius: 5px;\n"
+"}\n"
+"\n"
+"QLabel {\n"
+"    background: transparent;\n"
+"}\n"
+"\n"
+"QComboBox {\n"
+"    background: #222;\n"
+"    border: none;\n"
+"    border-radius: 5px;\n"
+"}\n"
+"\n"
+"QLineEdit {\n"
+"    background: #222;\n"
+"    border: none;\n"
+"    border-radius: 5px;\n"
+"}")
+        self.layersPanel.setTitle("")
+        self.layersPanel.setFlat(True)
+        self.layersPanel.setObjectName("layersPanel")
+        self.layersList = QtWidgets.QListWidget(self.layersPanel)
+        self.layersList.setGeometry(QtCore.QRect(0, 35, 171, 261))
+        self.layersList.setStyleSheet("QListWidget {\n"
+"    border: none;\n"
+"    background: #222;\n"
+"    color: white;\n"
+"}")
+        self.layersList.setObjectName("layersList")
+        self.label = QtWidgets.QLabel(self.layersPanel)
+        self.label.setGeometry(QtCore.QRect(5, 15, 41, 16))
+        self.label.setObjectName("label")
+        self.addLayer = QtWidgets.QPushButton(self.layersPanel)
+        self.addLayer.setGeometry(QtCore.QRect(85, 299, 80, 22))
+        self.addLayer.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.addLayer.setStyleSheet("border-left: 1px solid #888;\n"
+"border-top-left-radius: 0;\n"
+"border-bottom-left-radius: 0;")
+        self.addLayer.setObjectName("addLayer")
+        self.removeLayer = QtWidgets.QPushButton(self.layersPanel)
+        self.removeLayer.setGeometry(QtCore.QRect(5, 299, 80, 22))
+        self.removeLayer.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.removeLayer.setStyleSheet("border-right: 1px solid #888;\n"
+"border-top-right-radius: 0;\n"
+"border-bottom-right-radius: 0;")
+        self.removeLayer.setObjectName("removeLayer")
+        self.layerSettings = QtWidgets.QGroupBox(self.layersPanel)
+        self.layerSettings.setEnabled(False)
+        self.layerSettings.setGeometry(QtCore.QRect(5, 335, 161, 101))
+        self.layerSettings.setStyleSheet("QGroupBox {\n"
+"    color: white;\n"
+"}\n"
+"\n"
+"*::disabled {\n"
+"    color: #888;\n"
+"}")
+        self.layerSettings.setObjectName("layerSettings")
+        self.alphaBlending = QtWidgets.QComboBox(self.layerSettings)
+        self.alphaBlending.setGeometry(QtCore.QRect(85, 45, 70, 22))
+        self.alphaBlending.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContentsOnFirstShow)
+        self.alphaBlending.setFrame(True)
+        self.alphaBlending.setObjectName("alphaBlending")
+        self.alphaBlending.addItem("")
+        self.alphaBlending.addItem("")
+        self.label_3 = QtWidgets.QLabel(self.layerSettings)
+        self.label_3.setGeometry(QtCore.QRect(3, 45, 81, 21))
+        self.label_3.setObjectName("label_3")
+        self.moveLayerUp = QtWidgets.QPushButton(self.layerSettings)
+        self.moveLayerUp.setGeometry(QtCore.QRect(0, 75, 80, 22))
+        self.moveLayerUp.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.moveLayerUp.setStyleSheet("border-right: 1px solid #888;\n"
+"border-top-right-radius: 0;\n"
+"border-bottom-right-radius: 0;")
+        self.moveLayerUp.setObjectName("moveLayerUp")
+        self.moveLayerDown = QtWidgets.QPushButton(self.layerSettings)
+        self.moveLayerDown.setGeometry(QtCore.QRect(80, 75, 80, 22))
+        self.moveLayerDown.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.moveLayerDown.setStyleSheet("border-left: 1px solid #888;\n"
+"border-top-left-radius: 0;\n"
+"border-bottom-left-radius: 0;")
+        self.moveLayerDown.setObjectName("moveLayerDown")
+        self.layerName = QtWidgets.QLineEdit(self.layerSettings)
+        self.layerName.setGeometry(QtCore.QRect(0, 20, 160, 20))
+        self.layerName.setObjectName("layerName")
+        self.displayAllLayers = QtWidgets.QCheckBox(self.layersPanel)
+        self.displayAllLayers.setGeometry(QtCore.QRect(5, 460, 151, 20))
+        self.displayAllLayers.setAutoFillBackground(False)
+        self.displayAllLayers.setStyleSheet("background: transparent;\n"
+"color: white;")
+        self.displayAllLayers.setObjectName("displayAllLayers")
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -113,8 +211,17 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.currentColorButton.setWhatsThis(
-            _translate("MainWindow", "Текущий цвет кисти"))
+        self.currentColorButton.setWhatsThis(_translate("MainWindow", "Текущий цвет кисти"))
+        self.label.setText(_translate("MainWindow", "Слои:"))
+        self.addLayer.setText(_translate("MainWindow", "Добавить"))
+        self.removeLayer.setText(_translate("MainWindow", "Удалить"))
+        self.layerSettings.setTitle(_translate("MainWindow", "Слой"))
+        self.alphaBlending.setItemText(0, _translate("MainWindow", "ADD"))
+        self.alphaBlending.setItemText(1, _translate("MainWindow", "OVER"))
+        self.label_3.setText(_translate("MainWindow", "Alpha blending:"))
+        self.moveLayerUp.setText(_translate("MainWindow", "Вверх"))
+        self.moveLayerDown.setText(_translate("MainWindow", "Вниз"))
+        self.displayAllLayers.setText(_translate("MainWindow", "Отображать все слои"))
 
 
 if __name__ == "__main__":

@@ -5,19 +5,22 @@ from PyQt5.QtWidgets import QWidget, QOpenGLWidget
 from PyQt5.QtGui import QPaintEvent, QPainter, QColor, QImage
 from PyQt5.QtCore import QPoint, QObject, QPointF, QSize, QRect
 import OpenGL.GL as gl
-# from utils.canvas_renderer import render_canvases_into_bytes
 from shaders.base import VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_SOURCE
-import magicautils
+from magicautils import Canvas, render_canvases
+import constants.blending as AlphaBlendingModes
 
 
 class CanvasView(QOpenGLWidget):
-    def __init__(self, width: int, height: int, *canvases: magicautils.Canvas, parent: QObject = None):
+    def __init__(self, width: int, height: int, preview_canvas: Canvas, canvases: list[list[Canvas, str, int]], parent: QObject = None):
         super().__init__(parent)
         self.shift = QPointF(0, 0)
         self.scale = 1.0
         self.canvas_width = width
         self.canvas_height = height
-        self.canvases = list(canvases)
+        self.display_all_layers = False
+        self.preview_canvas = preview_canvas
+        self.previewing_canvas = 0
+        self.canvases = canvases
         self.highlighted_pixel = QPoint(-1, -1)
 
     # OpenGL related functions
@@ -71,8 +74,7 @@ class CanvasView(QOpenGLWidget):
 
         gl.glUniform1i(self.sampler_location, 0)
 
-        texture_data = magicautils.render_canvases(
-            self.canvas_width, self.canvas_height, self.canvases, -1, -1)
+        texture_data = self.render_canvases()
 
         self.view_texture = self.create_texture2D(
             self.canvas_width, self.canvas_height, texture_data)
@@ -154,23 +156,55 @@ class CanvasView(QOpenGLWidget):
         gl.glUniform2f(self.screen_size_location, self.width(), self.height())
 
         gl.glActiveTexture(gl.GL_TEXTURE0)
-
         gl.glBindTexture(gl.GL_TEXTURE_2D, self.view_texture)
-
         gl.glUniform1i(self.sampler_location, 0)
-
         gl.glDrawArrays(gl.GL_TRIANGLES, 0, 6)
 
-    def update_view_texture(self):
-        texture_data: bytes = magicautils.render_canvases(
-            self.canvas_width, self.canvas_height, self.canvases,
+    def render_canvases(self) -> bytes:
+        # Create new canvases array to change current editing layer canvas
+        # to preview canvas to see changes in current editing layer and don't
+        # mess up original canvases array
+
+        canvases = list()
+        alpha_blendings = list()
+
+        if self.display_all_layers:
+            for canvas, name, alpha_blending in self.canvases:
+                canvases.append(canvas)
+                alpha_blendings.append(alpha_blending)
+
+            canvases[self.previewing_canvas] = self.preview_canvas
+        else:
+            canvases.append(self.preview_canvas)
+            # Keep blending mode for WYSIWYG
+            alpha_blendings.append(self.canvases[self.previewing_canvas][2])
+
+        texture_data: bytes = render_canvases(
+            self.canvas_width, self.canvas_height,
+            canvases, alpha_blendings,
             self.highlighted_pixel.x(), self.highlighted_pixel.y())
+
+        return texture_data
+
+    def update_view_texture(self):
+        texture_data = self.render_canvases()
+
         self.set_texture_data(
             self.view_texture, self.canvas_width, self.canvas_height, texture_data)
 
         del texture_data
 
     # Canvas view related functions
+
+    def set_display_all_layers(self, enabled: bool):
+        self.display_all_layers = enabled
+        self.update_view()
+
+    def set_current_previewing_layer(self, index: int):
+        if index < 0 or index >= len(self.canvases):
+            return
+
+        self.previewing_canvas = index
 
     def shift_by(self, shift: QPoint):
         self.shift += shift
@@ -205,7 +239,7 @@ class CanvasView(QOpenGLWidget):
         if point.x() < 0 or point.x() >= self.canvas_width or point.y() < 0 or point.y() >= self.canvas_height:
             return None
 
-        return self.canvases[canvas].get_pixel(point.x(), point.y())
+        return self.preview_canvas.get_pixel(point.x(), point.y())
 
     def draw_pixel(self, at: QPoint, color: tuple[int, int, int, int], canvas: int = 0):
         point = self.get_canvas_point(at)
@@ -213,7 +247,7 @@ class CanvasView(QOpenGLWidget):
         if point.x() < 0 or point.x() >= self.canvas_width or point.y() < 0 or point.y() >= self.canvas_height:
             return
 
-        self.canvases[canvas].set_pixel(point.x(), point.y(), tuple(color))
+        self.preview_canvas.set_pixel(point.x(), point.y(), tuple(color))
         self.update_view_texture()
         self.repaint()
 
@@ -225,7 +259,7 @@ class CanvasView(QOpenGLWidget):
             start = self.get_canvas_point(p0)
             end = self.get_canvas_point(p1)
 
-        self.canvases[canvas].draw_line(
+        self.preview_canvas.draw_line(
             start.x(), start.y(), end.x(), end.y(), tuple(color))
 
         self.update_view_texture()
@@ -237,7 +271,7 @@ class CanvasView(QOpenGLWidget):
         if point.x() < 0 or point.x() >= self.canvas_width or point.y() < 0 or point.y() >= self.canvas_height:
             return
 
-        self.canvases[canvas].fill(point.x(), point.y(), tuple(color))
+        self.preview_canvas.fill(point.x(), point.y(), tuple(color))
 
         self.update_view_texture()
         self.repaint()
