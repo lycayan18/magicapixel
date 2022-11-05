@@ -370,7 +370,6 @@ class MainWidget(Ui_MainWindow, QWidget):
             # TODO: Add error handling ( e.g. when file structure is broken )
             im = Image.open(filepath)
 
-            # FIXME: Do something with loading image in current layer
             self.resize_canvas(im.width, im.height)
             data = im.load()
 
@@ -379,15 +378,24 @@ class MainWidget(Ui_MainWindow, QWidget):
                     self.canvas.set_pixel(x, y, convert(data[x, y], im.mode))
 
             self.canvases.clear()
-            self.canvases.append
+
+            # Append new canvas as we cleared canvases array ( otherwise we'll crash )
+            self.canvases.append([
+                self.canvas,
+                "Main Layer",
+                AlphaBlendingModes.OVER
+            ])
 
             self.canvas.copy_content(self.preview_canvas)
-            self.canvas_view.repaint()
+            self.canvas_view.set_current_previewing_layer(0)
+            self.canvas_view.update_view()
             self.repaint()
 
             self.save_state()
 
             self.update_window_title()
+            # Update layers list as we changed it above
+            self.update_layers_list()
 
     def handle_save_file(self):
         canvases = list()
