@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Пояснительная записка</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="header">
+        Проект PyQt <span class="project-name">"MagicaPixel"</span>
+    </div>
+    <div class="wrapper">
+        <h1>Тема проекта</h1>
+        <p>
+            Пиксель-арт редактор, редактор растровых изображений.<br />
+            Вдохновение взято с <a href="https://www.piskelapp.com/" target="_blank">PiskelApp</a>.
+        </p>
+        <br />
+        <h1>Автор и руководитель проекта</h1>
+        <p>
+            Автор - Безбородов Руслан<br />
+            Руководитель - Михаил Владимирович Кормановский
+        </p>
+        <br />
+        <h1>Задача</h1>
+        <p>
+            Создать программу для создания изображений и анимаций в стиле pixel-art, с поддержкой поддержкой
+            импорта/экспорта изображений.
+        </p>
+        <br />
+        <h1>Использование программы</h1>
+        <p>
+            1. Установить все необходимые компоненты ( смотрите <span class="bold">readme.md</span> )<br />
+            2. Запустить программу командой <span class="code">python3 main.py</span><br />
+            3. Прочитать памятку <span class="bold">help.html</span> в папке <span class="bold">docs</span>
+        </p>
+        <br />
+        <h1>Функционал программы</h1>
+        <table>
+            <tbody>
+                <tr>
+                    <td>№</td>
+                    <td>Название</td>
+                    <td>Реализация</td>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>Возможность рисовать в окне рисования</td>
+                    <td>Да</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>Импорт/экспорт изображений</td>
+                    <td>Да</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>Возможность создавать слои изображения</td>
+                    <td>Да</td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td>Создание и импорт/экспорт анимаций</td>
+                    <td>В процессе</td>
+                </tr>
+                <tr>
+                    <td>5</td>
+                    <td>Возможность задания палитры + функция дизеринга</td>
+                    <td>В процессе</td>
+                </tr>
+            </tbody>
+        </table>
+        <br />
+        <h1>Использованные технологии, библиотеки, алгоритмы</h1>
+        <h2>Magica Utils</h2>
+        <p>
+            В процессе разработки понадобилась библиотека для быстрого рисования на холстах и быстрого их рендеринга в
+            одно изображение. Библиотека написана на C++ и использует Python C API.
+            <br />
+            В данной библиотеке используется алгоритм <a
+                href="https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm">Брезенхама</a>
+            для растеризации линий, а также <a
+                href="https://en.wikipedia.org/wiki/Flood_fill#Moving_the_recursion_into_a_data_structure">stack-based
+                flood fill</a>
+            для заливки.
+            <br />
+            Тесты показали, что такое решение примерно в <span class="bold">416</span> раз быстрее, чем первоначальное
+            решение на Python.
+        </p>
+        <h2>OpenGL</h2>
+        <p>
+            Данная библиотека используется для вывода графики ( т.е. для вывода холста ). Это позволило разгрузить
+            процессор от лишних вычислений.<br />
+            Требуется OpenGL не ниже 3.0 ( поддерживается всеми современными видеокартами и встроенными графическими
+            чипами )
+        </p>
+        <h2>PIL</h2>
+        <p>
+            Эта библиотека используется для импорта/экспорта изображений в сырой набор байтов/из сырого набора байтов.
+        </p>
+        <br />
+        <h1>Структура программы</h1>
+        <p>
+        <p>
+            Программа разделена на две части: модуль magicautils и основная программа на Python.
+        </p>
+        <p>
+            Модуль magicautils - это утилиты и классы, написанные на C++. В этом модуле находятся все чувствительные к
+            быстродействию утилиты.
+        </p>
+        <p>
+            Основная программа содержит несколько классов:
+        </p>
+        <table>
+            <tbody>
+                <tr>
+                    <td>Класс/Метод</td>
+                    <td>Описание</td>
+                    <td>Файл</td>
+                </tr>
+                <tr>
+                    <td>CanvasView</td>
+                    <td>Виджет для рендеринга и отображения холстов в главное окно.</td>
+                    <td>widgets/canvasview.py</td>
+                </tr>
+                <tr>
+                    <td>ColorPicker</td>
+                    <td>Виджет для выбора цвета.</td>
+                    <td>widgets/colorpicker.py</td>
+                </tr>
+                <tr>
+                    <td>StateManager</td>
+                    <td>
+                        Класс, управляющий состояниями. Для реализации был использован паттерн
+                        <span class="bold">Memento</span> ( Снимок ).
+                        Имеет методы сохранения состояния, взятия состояния и восстановления состояния.
+                    </td>
+                    <td>utils/state_manager.py</td>
+                </tr>
+                <tr>
+                    <td>KeyboardActionsManager</td>
+                    <td>
+                        Класс для управлениями сочетаниями клавиш. Позволяет связать сочетание клавиш с функцией с
+                        помощью метода <span class="bold">subscribe</span>.
+                        <br />
+                        Пример:
+                        <p class="code">
+                            <span class="variable">actions_manager</span>.<span class="method">subscribe</span><span
+                                class="bracket">(</span><span class="string">"Ctrl+Z"</span>,
+                            <span class="method">undo_last_action</span><span class="bracket">)</span>
+                        </p>
+                    </td>
+                    <td>utils/keyboard_actions_manager.py</td>
+                </tr>
+                <tr>
+                    <td>convert</td>
+                    <td>
+                        Функция для конвертирования цветов из RGB/RGBA в RGBA. Повышает читабельность кода и уменьшает
+                        количество повторений.
+                    </td>
+                    <td>utils/color_converters.py</td>
+                </tr>
+            </tbody>
+        </table>
+        <p>
+            Модуль <span class="bold">magicautils</span> содержит один класс и один метод:
+        </p>
+        <table>
+            <tbody>
+                <tr>
+                    <td>Класс/Метод</td>
+                    <td>Описание</td>
+                    <td>Файл</td>
+                </tr>
+                <tr>
+                    <td>Canvas</td>
+                    <td>
+                        Класс для работы с холстом. Предоставляет функции рисования
+                        <span class="bold">draw_line</span>, <span class="bold">draw_point</span>,
+                        <span class="bold">fill</span>, а также функцию копирования содержимого холста в другой холст
+                        <span class="bold">copy</span>.
+                    </td>
+                    <td>magicautils/src/canvas.cpp</td>
+                </tr>
+                <tr>
+                    <td>render_canvases</td>
+                    <td>
+                        Функция для рендеринга нескольких холстов в одно целое изображение, представленное в сыром
+                        наборе байтов. Поддерживает Alpha Blending, который можно установить для каждого холста
+                        отдельно.
+                    </td>
+                    <td>magicautils/src/rendercanvases.cpp</td>
+                </tr>
+            </tbody>
+        </table>
+        </p>
+        <br />
+        <h1>Скриншоты программы</h1>
+        <div class="screenshorts-container">
+            <a class="image-link" href="./assets/images/Python 3.9 05.11.2022 18_06_10.png" target="_blank"><img
+                    src="./assets/images/Python 3.9 05.11.2022 18_06_10.png"></a>
+            <a class="image-link" href="./assets/images/Python 3.9 05.11.2022 18_38_01.png" target="_blank"><img
+                    src="./assets/images/Python 3.9 05.11.2022 18_38_01.png"></a>
+            <a class="image-link" href="./assets/images/space.png" target="_blank"><img class="pixel-art"
+                    src="./assets/images/space.png"></a>
+        </div>
+    </div>
+</body>
+
+</html>
