@@ -1,4 +1,5 @@
 VERTEX_SHADER_SOURCE = """
+#version 130
 attribute vec2 position;
 
 uniform float scale;
@@ -20,6 +21,7 @@ void main()
 """
 
 FRAGMENT_SHADER_SOURCE = """
+#version 130
 uniform sampler2D textureSampler;
 
 varying vec2 uv;
