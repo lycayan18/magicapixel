@@ -111,6 +111,10 @@ class Ui_MainWindow(object):
 "    color: white;\n"
 "}\n"
 "\n"
+"*::disabled {\n"
+"    color: #aaa;\n"
+"}\n"
+"\n"
 "QPushButton {\n"
 "    background: #222;\n"
 "    border: none;\n"
@@ -154,6 +158,7 @@ class Ui_MainWindow(object):
 "border-bottom-left-radius: 0;")
         self.addLayer.setObjectName("addLayer")
         self.removeLayer = QtWidgets.QPushButton(self.layersPanel)
+        self.removeLayer.setEnabled(False)
         self.removeLayer.setGeometry(QtCore.QRect(5, 299, 80, 22))
         self.removeLayer.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.removeLayer.setStyleSheet("border-right: 1px solid #888;\n"

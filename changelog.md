@@ -1,3 +1,6 @@
+### v. 0.2.1
+- Bug fixes
+
 ### v. 0.2.0
 - Added layers
 

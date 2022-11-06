@@ -161,6 +161,8 @@ class MainWidget(Ui_MainWindow, QWidget):
             AlphaBlendingModes.OVER
         )
 
+        # Enable "Remove Layer" button as we have two or more layers
+        self.removeLayer.setEnabled(True)
         self.update_layers_list()
         self.save_state()
 
@@ -170,10 +172,21 @@ class MainWidget(Ui_MainWindow, QWidget):
         if len(selected_items) > 0:
             item = selected_items[0]
 
+            # Disable remove button to prevent deleting the only one layer ( and avoid IndexError )
+            if len(self.canvases) == 1:
+                self.removeLayer.setDisabled(True)
+
             self.canvas_manager.remove_canvas(self.layersList.row(item))
+            # Update current previewing layer to avoid IndexError ( f.e. when user has deleted last layer )
+            self.canvas_view.set_current_previewing_layer(
+                self.canvas_manager.get_current_canvas_index())
             self.canvas = self.canvas_manager.get_current_canvas()
             self.update_layers_list()
             self.save_state()
+
+            # Update view
+            self.canvas.copy_content(self.preview_canvas)
+            self.canvas_view.update_view()
 
     def move_layer(self, direction: int):
         selected_items = self.layersList.selectedItems()
@@ -216,6 +229,11 @@ class MainWidget(Ui_MainWindow, QWidget):
             row = self.layersList.selectedIndexes()[0].row()
 
             self.layerSettings.setEnabled(True)
+
+            # Disable remove button to prevent deleting the only one layer ( and avoid IndexError )
+            if len(self.canvases) == 1:
+                self.removeLayer.setDisabled(True)
+
             self.layerName.setText(selected_items[0].text())
 
             self.canvas_manager.set_current_editing_canvas(row)

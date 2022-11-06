@@ -12,8 +12,8 @@ varying vec2 uv;
 void main()
 {
     vec2 wShift = vec2(shift.x, -shift.y);
-    vec2 pos = ((position * 0.5 + vec2(0.5, -0.5)) * canvasSize * scale + wShift) / screenSize;
-    gl_Position = vec4(pos * 2, 0.0, 1.0);
+    vec2 pos = ((position * vec2(0.5, 0.5) + vec2(0.5, -0.5)) * canvasSize * scale + wShift) / screenSize;
+    gl_Position = vec4(pos * vec2(2.0), 0.0, 1.0);
 
     uv = (position * 0.5 + 0.5);
     uv.y = 1.0 - uv.y;
@@ -36,7 +36,7 @@ void main()
 
     vec3 backgroundColor = vec3(0.2);
 
-    if(int(gl_FragCoord.x / 10) % 2 + int(gl_FragCoord.y / 10) % 2 == 1) {
+    if(int(gl_FragCoord.x / 10.0) % 2 + int(gl_FragCoord.y / 10.0) % 2 == 1) {
         backgroundColor = vec3(0.3);
     }
 

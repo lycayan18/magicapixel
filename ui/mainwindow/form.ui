@@ -251,6 +251,10 @@ QPushButton {
 	color: white;
 }
 
+*::disabled {
+	color: #aaa;
+}
+
 QPushButton {
 	background: #222;
 	border: none;
@@ -331,6 +335,9 @@ border-bottom-left-radius: 0;</string>
     </property>
    </widget>
    <widget class="QPushButton" name="removeLayer">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>5</x>
