@@ -31,6 +31,3 @@
 /ui/resizesettingswindow/main.pyproject
 /ui/resizesettingswindow/main.pyproject.user
 /constants/__pycache__
-/magicautils.pyi
-/utils/canvas_manager.py
-/constants/
