@@ -494,6 +494,12 @@ class MainWidget(Ui_MainWindow, QWidget):
 
         im = Image.frombytes(
             "RGBA", (self.current_width, self.current_height), data, "raw")
+
+        # When saving in jpeg we must convert data to RBG mode as jpeg does not supports it.
+        # Otherwise the programm will crash
+        if self.current_file.endswith(".jpg") or self.current_file.endswith(".jpeg"):
+            im = im.convert('RGB')
+
         im.save(self.current_file)
 
     def handle_save_as_file(self):
@@ -531,11 +537,11 @@ class MainWidget(Ui_MainWindow, QWidget):
 
         self.verticalLayoutWidget.resize(ev.size().width(), 23)
         # Use max to bound brushPanel and vbox so nothing overlap each other
-        self.brushPanel.move(0, max(ev.size().height() // 2 - 250, 25))
+        self.brushPanel.move(0, max(int(ev.size().height() // 2) - 250, 25))
 
         # Use max to bound brushPanel and vbox so nothing overlap each other
         self.layersPanel.move(ev.size().width() - 170,
-                              max(ev.size().height() // 2 - 250, 25))
+                              max(int(ev.size().height() // 2) - 250, 25))
 
     def mousePressEvent(self, ev: QtGui.QMouseEvent) -> None:
         # For convenience let's always close the color picker
