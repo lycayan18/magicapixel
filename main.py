@@ -1,21 +1,22 @@
 import sys
-import time
 
 from PIL import Image
-from PyQt5.QtWidgets import QApplication, QPushButton, QWidget, QMenuBar, QAction, QFileDialog, QListWidgetItem
+from PyQt5.QtWidgets import QApplication, QWidget, QMenuBar, QAction, QFileDialog, QListWidgetItem
 from PyQt5 import QtGui
 from PyQt5.QtCore import QPoint, QRect, QPointF, QUrl, Qt
 from widgets.canvasview import CanvasView
 from widgets.newfilewindow import NewFileWindow
 from widgets.colorpicker import ColorPicker
 from widgets.resizesettingswindow import ResizeSettingsWindow
+from widgets.brushbutton import BrushButton
+from brushes.brushes import Brush, PenBrush, PickerBrush, StrokeBrush, FillBrush
 from utils.state_manager import StateManager
 from utils.keyboard_actions_manager import KeyboardActionsManager
 from utils.canvas_manager import CanvasManager
 from utils.color_converters import convert
 from ui.mainwindow.mainwindow import Ui_MainWindow
-from ui.styles.button import CURRENT_BRUSH_BUTTON_STYLESHEET
 from constants import blending as AlphaBlendingModes
+from utils.load_icon import load_icon
 import magicautils
 
 QApplication.setAttribute(
@@ -32,6 +33,7 @@ class MainWidget(Ui_MainWindow, QWidget):
 
         self.keyboard_actions_manager.subscribe("Ctrl+Z", self.pop_state)
         self.keyboard_actions_manager.subscribe("Ctrl+Y", self.recover_state)
+        self.keyboard_actions_manager.subscribe("Ctrl+R", self.restore_view)
 
         # Current editing file
         self.current_file = None
@@ -71,14 +73,26 @@ class MainWidget(Ui_MainWindow, QWidget):
         self.setMouseTracking(True)
         self.canvas_view.setMouseTracking(True)
 
-        self.current_brush = "pen"  # pen, stroke, picker, fill
-
         self.mouse_state = {
             "pressed": False,
             "canvas_start_pos": QPoint(0, 0),
             "current_pos": QPoint(0, 0),
             "prev_pos": QPoint(0, 0)
         }
+
+        # For adding brush buttons
+        self.current_brush_button_column = 0
+        self.current_brush_button_row = 0
+
+        self.brush_buttons: list[BrushButton] = list()
+
+        # Init brushes
+        self.pen_brush = PenBrush()
+        self.stroke_brush = StrokeBrush()
+        self.picker_brush = PickerBrush(self.handle_color_picking)
+        self.fill_brush = FillBrush()
+
+        self.current_brush = self.pen_brush
 
         self.initUI()
         self.save_state()
@@ -125,10 +139,11 @@ class MainWidget(Ui_MainWindow, QWidget):
         self.canvas_view.setGeometry(0, 0, 800, 515)
         self.canvas_view.show()
 
-        self.connect_brush_button_handler(self.penButton, "pen")
-        self.connect_brush_button_handler(self.strokeButton, "stroke")
-        self.connect_brush_button_handler(self.pickerButton, "picker")
-        self.connect_brush_button_handler(self.fillButton, "fill")
+        self.add_brush("assets/icons/pen.png", self.pen_brush, True)
+        self.add_brush("assets/icons/stroke.png", self.stroke_brush)
+        self.add_brush("assets/icons/picker.png", self.picker_brush)
+        self.add_brush("assets/icons/fill.png", self.fill_brush)
+
         self.currentColorButton.clicked.connect(self.open_color_picker)
 
         self.layersList.itemSelectionChanged.connect(self.handle_item_change)
@@ -144,6 +159,49 @@ class MainWidget(Ui_MainWindow, QWidget):
             self.handle_display_all_layers_state_changed)
 
         self.update_layers_list()
+
+    def add_brush(self, icon_path: str, brush: Brush, highlight: bool = False):
+        """
+        Adds BrushButton to the UI and connects handler to it to change current_brush to
+        provided brush
+
+        :param highlight: if you want to highlight button immediately after its initialization
+        """
+
+        brush_button = BrushButton(load_icon(icon_path), self.brushPanel)
+        brush_button.setGeometry(
+            10 + self.current_brush_button_column *
+            50, 10 + self.current_brush_button_row * 50,
+            42, 42
+        )
+        brush_button.setCursor(QtGui.QCursor(Qt.PointingHandCursor))
+
+        if highlight:
+            brush_button.set_highlighted(True)
+
+        self.brush_buttons.append(brush_button)
+
+        self.connect_brush_button_handler(brush_button, brush)
+
+        self.current_brush_button_column += 1
+
+        if self.current_brush_button_column >= 2:
+            self.current_brush_button_column = 0
+            self.current_brush_button_row += 1
+
+    def connect_brush_button_handler(self, button: BrushButton, brush_to_use: Brush):
+        button.clicked.connect(
+            lambda: self.handle_brush_button_clicked(brush_to_use, button))
+
+    def handle_brush_button_clicked(self, brush_to_use: Brush, button: BrushButton):
+        # Unhighlight all buttons
+        for brush_button in self.brush_buttons:
+            brush_button.set_highlighted(False)
+
+        # Highlight choosed button
+        button.set_highlighted(True)
+
+        self.current_brush = brush_to_use
 
     def update_layers_list(self):
         self.layersList.clear()
@@ -261,6 +319,14 @@ class MainWidget(Ui_MainWindow, QWidget):
 
     def save_state(self):
         self.state_manager.push_state(self.get_state())
+
+    # Restores scaling and shifting in case you scaled/moved too far
+    def restore_view(self):
+        self.canvas_view.set_scale(1.0)
+        self.canvas_view.set_shift(QPoint(0, 0))
+
+        # Repaint canvas_view, otherwise user won't see changes till mouse move
+        self.canvas_view.repaint()
 
     # Return to previous state ( in other words cancel last operation )
     def pop_state(self):
@@ -445,31 +511,20 @@ class MainWidget(Ui_MainWindow, QWidget):
     # Opens color picker window
 
     def open_color_picker(self):
-        self.color_picker.move(self.currentColorButton.x() + self.x() + self.brushPanel.x(),
-                               self.currentColorButton.y() + self.y() + self.brushPanel.y())
+        self.color_picker.move(self.colorPickerBox.x() + self.x() + self.brushPanel.x(),
+                               self.colorPickerBox.y() + self.y() + self.brushPanel.y() - self.color_picker.height())
         self.color_picker.show()
+
+    def handle_color_picking(self, color: QtGui.QColor):
+        self.handle_color_change(color)
+        self.color_picker.set_current_color(color)
 
     def handle_color_change(self, color: QtGui.QColor):
         self.current_color = (color.red(), color.green(),
                               color.blue(), color.alpha())
 
         self.currentColorButton.setStyleSheet(
-            f"background: rgba({color.red()}, {color.green()}, {color.blue()}, {color.alpha()})")
-
-    def connect_brush_button_handler(self, button: QPushButton, brush: str):
-        button.clicked.connect(
-            lambda: self.handle_brush_button_clicked(button, brush))
-
-    def handle_brush_button_clicked(self, button: QPushButton, brush: str):
-        # Reset stylesheet for all buttons
-        self.penButton.setStyleSheet("")
-        self.strokeButton.setStyleSheet("")
-        self.pickerButton.setStyleSheet("")
-        self.fillButton.setStyleSheet("")
-
-        self.current_brush = brush
-
-        button.setStyleSheet(CURRENT_BRUSH_BUTTON_STYLESHEET)
+            f"background-color: rgba({color.red()}, {color.green()}, {color.blue()}, {color.alpha()})")
 
     def resizeEvent(self, ev: QtGui.QResizeEvent) -> None:
         self.canvas_view.setGeometry(QRect(QPoint(0, 0), ev.size()))
@@ -535,47 +590,13 @@ class MainWidget(Ui_MainWindow, QWidget):
         self.repaint()
 
     def use_brush(self):
-        if self.current_brush == "pen":
-            # To prevent "bubbles" we need to draw the line from mouse previous
-            # position to mouse current position
-            # Otherwise, you'll see "holes"
-            self.canvas_view.draw_pixel(
-                self.mouse_state["current_pos"],
-                self.current_color,
-                0
-            )
-            self.canvas_view.draw_line(
-                self.mouse_state["prev_pos"],
-                self.mouse_state["current_pos"],
-                self.current_color,
-                0
-            )
-        elif self.current_brush == "stroke":
+        if not self.current_brush.is_direct_draw_brush():
+            # We need to clear canvas back to previous state
+            # In other words, enable preview mode
             self.canvas.copy_content(self.preview_canvas)
-            self.canvas_view.draw_line(
-                self.mouse_state["canvas_start_pos"],
-                self.canvas_view.get_canvas_point(
-                    self.mouse_state["current_pos"]
-                ),
-                self.current_color,
-                0,
-                # Do not transform to canvas relative coordinates as they've already been transformed
-                transform_to_canvas_relative_coordinates=False
-            )
-        elif self.current_brush == "picker":
-            color = self.canvas_view.get_color(
-                self.mouse_state["current_pos"])
 
-            if color is not None:
-                qcolor = QtGui.QColor(*color)
-                self.handle_color_change(qcolor)
-                self.color_picker.set_current_color(qcolor)
-        elif self.current_brush == "fill":
-            self.canvas_view.fill(
-                self.mouse_state["current_pos"],
-                self.current_color,
-                0
-            )
+        self.current_brush.use(
+            self.canvas_view, self.mouse_state, self.current_color)
 
     def draw_to_canvas(self):
         self.canvas_view.highlight_pixel(self.mouse_state["current_pos"])
